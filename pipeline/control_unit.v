@@ -2,29 +2,22 @@
 `include "constants.v"
 
 module control_unit(
-     input reset_n,
-     input clk,
      input [3 : 0] opcode,
      input [5 : 0] func_code,
      input [1:0] ALU_Compare,
      
      output [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
      output RegWrite,
-     output ALUSrcA,
      output reg [1 : 0] ALUSrcB,
      output reg [3: 0] ALUOperation,
      output [1 : 0] PCSource,
      output PC_en,
-     output IorD,
-     output reg readM,
-     output MemWrite,
+     output d_readM,
+     output d_writeM,
      output [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
      output output_active,
      output is_halted
     );
-    // control signals that are not output
-    wire PCWriteCond;
-    wire PCWrite;
     
     // type of instructions
     wire isRtype_Arithmetic;
@@ -35,13 +28,6 @@ module control_unit(
     wire isItype_Memory;
     wire isJtype_Jump;
     wire isRtype_Jump;
-    
-    wire isBranchTaken;
-    
-    assign isBranchTaken = (opcode == `OPCODE_BNE && (ALU_Compare == `ALU_BIG || ALU_Compare == `ALU_SMALL) // not equal
-                         || opcode == `OPCODE_BEQ && ALU_Compare == `ALU_SAME  // equal
-                         || opcode == `OPCODE_BGZ && ALU_Compare == `ALU_BIG  // greater than
-                         || opcode == `OPCODE_BLZ && ALU_Compare == `ALU_SMALL) ? 1 : 0;  // kess than
     
     // is Arithmetic Rtype instruction
     assign isRtype_Arithmetic = (opcode == `typeR)
@@ -111,12 +97,14 @@ module control_unit(
             else ALUOperation = 4'bx;
      end  
     
-    // readM signal                ////////////////////////////////////////////////////////  need changes
-     always @(*) begin 
-        if(stage==`STAGE_IF) readM = 1'b1; // activate at instruction fetch
-        else if(stage==`STAGE_MEM && opcode == `OPCODE_LWD) readM = 1'b1; // activate at mem read
-        else readM = 0;
-    end
+
+    // d_readM signal
+    assign d_readM = opcode == `OPCODE_LWD ? 1 : 0;
+
+
+    // d_writeM signal
+    assign d_writeM = opcode == `OPCODE_SWD ? 1 : 0;
+
     
     //              MUX selector signals             //
     // RegDst signal
@@ -131,8 +119,6 @@ module control_unit(
                        opcode == `OPCODE_LWD ? `REGWRITESRC_MEM : 
                        `REGWRITESRC_ALU;
     
-    // ALUSrc A signal                     //////////////////////////    ALUSRC_A may not ne need
-    assign ALUSrcA = (stage == `STAGE_IF || stage == `STAGE_ID) ? `ALUSRCA_PC : `ALUSRCA_REG; // IF : pc + 1  ID: pc + imm (branch)
     
     // ALUSrc B signal
     always @ (*) begin
@@ -143,8 +129,6 @@ module control_unit(
             else ALUSrcB = 2'bz;
     end
     
-    // IorD signal                        ///////////////////////////   may need to be fixed
-    assign IorD = ( PC_en ? `IORD_I : `IORD_D );
     
     // PCSource
     assign PCSource = (isItype_Branch  && stage == `STAGE_EX) ? `PCSRC_BRANCH :     // pc from branch
@@ -157,13 +141,6 @@ module control_unit(
     assign RegWrite = ( (opcode == `typeR && func_code == `FUNC_JRL) // stage ID JRL
                       || opcode == `OPCODE_JAL ) ? 1'b1 : 1'b0 ; // stage ID JAL
      
-    // MemWrite
-    assign MemWrite = ( opcode == `OPCODE_SWD ? 1'b1 : 1'b0 );
     
-    // PC_en
-    // PC_en = PCWrite  + PCWriteCond * ALU_compare (from lecture05. multicycle cpu slides)
-    // the final signal to update pc or not
-    assign PC_en = (stage == `STAGE_IF // update pc + 1                       ////////////////////// NEED TO BE FIXED
-                 || stage == `STAGE_ID && (isItype_Branch && (isJtype_Jump || isRtype_Jump)) // update pc + 1 (for branch so that next instr = pc + 1 + imm) 
-                                                                                             // or {pc, target} (jump)
-                 || stage == `STAGE_EX && isItype_Branch && isBranchTaken) ? 1 : 0; // update pc + imm that was caldulated at ID stage
+
+endmodule
