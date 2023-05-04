@@ -189,11 +189,6 @@ module ID_EX_register(
         input [1 : 0] MemtoReg_EX, // write 0: ALU, 1: MDR, 2: PC + 1
         
         // output ports
-        // EX
-        output reg [1 : 0] ALUSrcB_MEM,
-        output reg [3 : 0] ALUOperation_MEM,
-        output isItype_Branch_MEM,
-
         // MEM
         output reg d_readM_MEM,
         output reg d_writeM_MEM,
@@ -229,3 +224,57 @@ module ID_EX_register(
         input [`WORD_SIZE - 1] ALU_result_EX,
         output [`WORD_SIZE - 1] ALU_out_MEM
     );
+
+    always @ (posedge clk) begin
+        if (~reset_n || flush) begin
+            // ----------------- control signals
+            // MEM
+            d_readM_MEM <= 0;
+            d_writeM_MEM <= 0;
+
+            // WB
+            output_active_MEM <= 0;
+            is_halted_MEM <= 0; 
+            RegDst_MEM <= 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM <= 0;
+            MemtoReg_MEM <= 0; // write 0: ALU, 1: MDR, 2: PC + 1
+
+            // ------------------  Data latches
+            pc_MEM <= 0;
+            instruction_MEM <= 0;
+            
+            rs_MEM <= 0;
+            rt_MEM <= 0;
+            RF_data1_MEM <= 0;
+            RF_data2_MEM <= 0;
+            imm_signed_MEM <= 0;
+            write_reg_addr_MEM <= 0;
+            ALU_out_MEM <= 0;
+        end
+        else if (~stall) begin
+            // ----------------- control signals
+            // MEM
+            d_readM_MEM <= d_readM_EX;
+            d_writeM_MEM <= d_writeM_EX;
+
+            // WB
+            output_active_MEM <= output_active_EX;
+            is_halted_MEM <= is_halted_EX; 
+            RegDst_MEM <= RegDst_EX; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM <= RegWrite_EX;
+            MemtoReg_MEM <= MemtoReg_EX; // write 0: ALU, 1: MDR, 2: PC + 1
+
+            // ------------------  Data latches
+            pc_MEM <= pc_EX;
+            instruction_MEM <= instruction_EX;
+            
+            rs_MEM <= rs_EX;
+            rt_MEM <= rt_EX;
+            RF_data1_MEM <= RF_data1_EX;
+            RF_data2_MEM <= RF_data2_EX;
+            imm_signed_MEM <= imm_signed_EX;
+            write_reg_addr_MEM <= write_reg_addr_EX;
+            ALU_out_MEM <= ALU_result_EX;
+        end
+    end
+    endmodule
