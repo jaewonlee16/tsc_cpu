@@ -5,6 +5,10 @@ module control_unit(
      input [3 : 0] opcode,
      input [5 : 0] func_code,
      
+     // all input signals are from ID stage
+     // and all output signals are out at ID stage
+     // But signals can go through pipeline register until WB
+
      // ID signal
      output output_active,
      output is_halted,
