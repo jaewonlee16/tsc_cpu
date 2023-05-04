@@ -10,8 +10,6 @@ module control_unit(
      // But signals can go through pipeline register until WB
 
      // ID signal
-     output output_active,
-     output is_halted,
      output [1 : 0] PCSource,
 
      // EX signal
@@ -23,6 +21,8 @@ module control_unit(
      output d_writeM,
 
      // WB signal
+     output output_active,
+     output is_halted,
      output [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
      output RegWrite,
      output [1 : 0] MemtoReg // write 0: ALU, 1: MDR, 2: PC + 1
