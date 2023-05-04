@@ -41,6 +41,7 @@ module ID_EX_register(
     // EX
     input [1 : 0] ALUSrcB_ID,
     input [3 : 0] ALUOperation_ID,
+    input isItype_Branch_ID,
 
     // MEM
     input d_readM_ID,
@@ -57,6 +58,7 @@ module ID_EX_register(
     // EX
     output reg [1 : 0] ALUSrcB_EX,
     output reg [3 : 0] ALUOperation_EX,
+    output isItype_Branch_EX,
 
     // MEM
     output reg d_readM_EX,
@@ -102,6 +104,7 @@ module ID_EX_register(
             // EX
             ALUSrcB_EX <= 0;
             ALUOperation_EX <= 0;
+            isItype_Branch_EX <= 0;
 
             // MEM
             d_readM_EX <= 0;
@@ -130,32 +133,38 @@ module ID_EX_register(
         else if (~stall) begin
             // ----------------- control signals
             // EX
-            ALUSrcB_EX <= ALUSrcB_EX;
-            ALUOperation_EX <= ALUOperation_EX;
+            ALUSrcB_EX <= ALUSrcB_ID;
+            ALUOperation_EX <= ALUOperation_ID;
+            isItype_Branch_EX <= isItype_Branch_ID;
 
             // MEM
-            d_readM_EX <= d_readM_EX;
-            d_writeM_EX <= d_writeM_EX;
+            d_readM_EX <= d_readM_ID;
+            d_writeM_EX <= d_writeM_ID;
 
             // WB
-            output_active_EX <= output_active_EX;
-            is_halted_EX <= is_halted_EX; 
-            RegDst_EX <= RegDst_EX; // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX <= RegWrite_EX;
-            MemtoReg_EX <= MemtoReg_EX; // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_EX <= output_active_ID;
+            is_halted_EX <= is_halted_ID; 
+            RegDst_EX <= RegDst_ID; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_EX <= RegWrite_ID;
+            MemtoReg_EX <= MemtoReg_ID; // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ------------------  Data latches
-            pc_EX <= pc_EX;
-            branch_predicted_pc_EX <= branch_predicted_pc_EX;
-            instruction_EX <= instruction_EX;
+            pc_EX <= pc_ID;
+            branch_predicted_pc_EX <= branch_predicted_pc_ID;
+            instruction_EX <= instruction_ID;
             
-            i_type_branch_target_EX <= i_type_branch_target_EX;
-            rs_EX <= rs_EX;
-            rt_EX <= rt_EX;
-            rd_EX <= rd_EX
-            RF_data1_EX <= RF_data1_EX;
-            RF_data2_EX <= RF_data2_EX;
-            imm_signed_EX <= imm_signed_EX;
+            i_type_branch_target_EX <= i_type_branch_target_ID;
+            rs_EX <= rs_ID;
+            rt_EX <= rt_ID;
+            rd_EX <= rd_ID
+            RF_data1_EX <= RF_data1_ID;
+            RF_data2_EX <= RF_data2_ID;
+            imm_signed_EX <= imm_signed_ID;
         end
     end
     endmodule
+
+
+    module EX_MEM_register(
+        
+    );
