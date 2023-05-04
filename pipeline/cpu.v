@@ -25,5 +25,7 @@ module cpu(
 );
 
 	// TODO : Implement your pipelined CPU!
+        assign i_readM = 1;
+        assign i_writeM = 0;
 
 endmodule

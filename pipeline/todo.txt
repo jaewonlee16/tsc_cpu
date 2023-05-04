@@ -1,0 +1,1 @@
+add nop to pipeline register for calculating num_inst
