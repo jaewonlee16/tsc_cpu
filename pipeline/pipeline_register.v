@@ -77,7 +77,7 @@ module ID_EX_register(
     input instruction_ID,
 
     output reg pc_EX,
-    output reg branch_predicted_pc_EX,
+    output reg branch_predicted_pc_EX,    // last because branch ends at EX
     output reg instruction_EX,
 
     input [`WORD_SIZE - 1 : 0] i_type_branch_target_ID,
@@ -87,15 +87,17 @@ module ID_EX_register(
     input [`WORD_SIZE - 1] RF_data1_ID,
     input [`WORD_SIZE - 1] RF_data2_ID,
     input [`WORD_SIZE - 1] imm_signed_ID,
+    input [1 : 0] write_reg_addr_ID,
 
     
-    output reg [`WORD_SIZE - 1 : 0] i_type_branch_target_EX,
+    output reg [`WORD_SIZE - 1 : 0] i_type_branch_target_EX,   // last because branch ends at EX
     output reg [1 : 0] rs_EX,
     output reg [1 : 0] rt_EX,
     output reg [1 : 0] rd_EX
     output reg [`WORD_SIZE - 1] RF_data1_EX,
     output reg [`WORD_SIZE - 1] RF_data2_EX,
     output reg [`WORD_SIZE - 1] imm_signed_EX,
+    output [1 : 0] write_reg_addr_EX
 );
 
     always @ (posedge clk) begin
@@ -129,6 +131,7 @@ module ID_EX_register(
             RF_data1_EX <= 0;
             RF_data2_EX <= 0;
             imm_signed_EX <= 0;
+            write_reg_addr_EX <= 0;
         end
         else if (~stall) begin
             // ----------------- control signals
@@ -160,11 +163,69 @@ module ID_EX_register(
             RF_data1_EX <= RF_data1_ID;
             RF_data2_EX <= RF_data2_ID;
             imm_signed_EX <= imm_signed_ID;
+            write_reg_addr_EX <= write_reg_addr_ID;
         end
     end
     endmodule
 
 
     module EX_MEM_register(
+        input clk,
+        input reset_n,
+        input flush,
+        input stall,
+
+        // ----------------------------- control signal inputs and outputs
+        // input ports
+        // MEM
+        input d_readM_EX,
+        input d_writeM_EX,
+
+        // WB
+        input output_active_EX,
+        input is_halted_EX, 
+        input [1 : 0] RegDst_EX, // write to 0: rt, 1: rd, 2: $2 (JAL)
+        input RegWrite_EX,
+        input [1 : 0] MemtoReg_EX, // write 0: ALU, 1: MDR, 2: PC + 1
         
+        // output ports
+        // EX
+        output reg [1 : 0] ALUSrcB_MEM,
+        output reg [3 : 0] ALUOperation_MEM,
+        output isItype_Branch_MEM,
+
+        // MEM
+        output reg d_readM_MEM,
+        output reg d_writeM_MEM,
+
+        // WB
+        output reg output_active_MEM,
+        output reg is_halted_MEM, 
+        output reg [1 : 0] RegDst_MEM, // write to 0: rt, 1: rd, 2: $2 (JAL)
+        output reg RegWrite_MEM,
+        output reg [1 : 0] MemtoReg_MEM, // write 0: ALU, 1: MDR, 2: PC + 1
+        
+        // ----------------------------------- Data latch
+        input pc_EX,
+        input instruction_EX,
+
+        output reg pc_MEM,
+        output reg instruction_MEM,
+
+        input [1 : 0] rs_EX,
+        input [1 : 0] rt_EX,
+        input [`WORD_SIZE - 1] RF_data1_EX,
+        input [`WORD_SIZE - 1] RF_data2_EX,
+        input [`WORD_SIZE - 1] imm_signed_EX,
+        input [1 : 0] write_reg_addr_EX,
+
+        output reg [1 : 0] rs_MEM,
+        output reg [1 : 0] rt_MEM,
+        output reg [`WORD_SIZE - 1] RF_data1_MEM,
+        output reg [`WORD_SIZE - 1] RF_data2_MEM,
+        output reg [`WORD_SIZE - 1] imm_signed_MEM,
+        output [1 : 0] write_reg_addr_MEM
+
+        input [`WORD_SIZE - 1] ALU_result_EX,
+        output [`WORD_SIZE - 1] ALU_out_MEM
     );
