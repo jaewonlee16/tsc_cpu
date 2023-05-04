@@ -325,53 +325,43 @@ module ID_EX_register(
     always @ (posedge clk) begin
         if (~reset_n || flush) begin
             // ----------------- control signals
-            // MEM
-            d_readM_MEM <= 0;
-            d_writeM_MEM <= 0;
-
             // WB
-            output_active_MEM <= 0;
-            is_halted_MEM <= 0; 
-            RegDst_MEM <= 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM <= 0;
-            MemtoReg_MEM <= 0; // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_WB <= 0;
+            is_halted_WB <= 0; 
+            RegDst_WB <= 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_WB <= 0;
+            MemtoReg_WB <= 0; // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ------------------  Data latches
-            pc_MEM <= 0;
-            instruction_MEM <= 0;
+            pc_WB <= 0;
+            instruction_WB <= 0;
             
-            rs_MEM <= 0;
-            rt_MEM <= 0;
-            RF_data1_MEM <= 0;
-            RF_data2_MEM <= 0;
-            imm_signed_MEM <= 0;
-            write_reg_addr_MEM <= 0;
-            ALU_out_MEM <= 0;
+            rs_WB <= 0;
+            rt_WB <= 0;
+            imm_signed_WB <= 0;
+            write_reg_addr_WB <= 0;
+            ALU_out_WB <= 0;
+            MDR_WB <= 0;
         end
         else if (~stall) begin
             // ----------------- control signals
-            // MEM
-            d_readM_MEM <= d_readM_EX;
-            d_writeM_MEM <= d_writeM_EX;
-
             // WB
-            output_active_MEM <= output_active_EX;
-            is_halted_MEM <= is_halted_EX; 
-            RegDst_MEM <= RegDst_EX; // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM <= RegWrite_EX;
-            MemtoReg_MEM <= MemtoReg_EX; // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_WB <= output_active_MEM;
+            is_halted_WB <= is_halted_MEM; 
+            RegDst_WB <= RegDst_MEM; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_WB <= RegWrite_MEM;
+            MemtoReg_WB <= MemtoReg_MEM; // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ------------------  Data latches
-            pc_MEM <= pc_EX;
-            instruction_MEM <= instruction_EX;
+            pc_WB <= pc_MEM;
+            instruction_WB <= instruction_MEM;
             
-            rs_MEM <= rs_EX;
-            rt_MEM <= rt_EX;
-            RF_data1_MEM <= RF_data1_EX;
-            RF_data2_MEM <= RF_data2_EX;
-            imm_signed_MEM <= imm_signed_EX;
-            write_reg_addr_MEM <= write_reg_addr_EX;
-            ALU_out_MEM <= ALU_result_EX;
+            rs_WB <= rs_MEM;
+            rt_WB <= rt_MEM;
+            imm_signed_WB <= imm_signed_MEM;
+            write_reg_addr_WB <= write_reg_addr_MEM;
+            ALU_out_WB <= ALU_result_MEM;
+            MDR_WB <= MDR_MEM;
         end
     end
     endmodule
