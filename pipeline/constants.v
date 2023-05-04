@@ -41,3 +41,6 @@
 
 `define IORD_I 1'b0
 `define IORD_D 1'b1
+
+`define BRANCH_ALWAYS_TAKEN 1'b0
+`define BRANCH_SATURATION_COUNTER 1'b1
