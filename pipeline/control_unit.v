@@ -5,16 +5,23 @@ module control_unit(
      input [3 : 0] opcode,
      input [5 : 0] func_code,
      
-     output [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
-     output RegWrite,
+     // ID signal
+     output output_active,
+     output is_halted,
+     output [1 : 0] PCSource,
+
+     // EX signal
      output reg [1 : 0] ALUSrcB,
      output reg [3: 0] ALUOperation,
-     output [1 : 0] PCSource,
+
+     // MEM signal
      output d_readM,
      output d_writeM,
-     output [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
-     output output_active,
-     output is_halted
+
+     // WB signal
+     output [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
+     output RegWrite,
+     output [1 : 0] MemtoReg // write 0: ALU, 1: MDR, 2: PC + 1
     );
     
     // type of instructions
