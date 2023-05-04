@@ -22,6 +22,7 @@
 `define OPCODE_BLZ 4'd3
 `define OPCODE_JMP 4'd9
 `define OPCODE_JAL 4'd10
+`define OPCODE_NOP 4'd14
 
 
 // ALU operations
