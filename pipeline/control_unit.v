@@ -11,7 +11,6 @@ module control_unit(
      output reg [1 : 0] ALUSrcB,
      output reg [3: 0] ALUOperation,
      output [1 : 0] PCSource,
-     output PC_en,
      output d_readM,
      output d_writeM,
      output [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
@@ -72,7 +71,6 @@ module control_unit(
     // simple signals
     assign output_active = ( opcode == `typeR && func_code == `FUNC_WWD );
     assign is_halted = ((opcode == `typeR) && (func_code == `FUNC_HLT) );
-    assign writeM = ( stage == `STAGE_MEM && opcode == `OPCODE_SWD );
     
    
     // ALU op signals
