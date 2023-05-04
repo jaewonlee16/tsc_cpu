@@ -122,7 +122,7 @@ module ID_EX_register(
             i_type_branch_target_EX <= 0;
             rs_EX <= 0;
             rt_EX <= 0;
-            rd_EX
+            rd_EX <= 0;
             RF_data1_EX <= 0;
             RF_data2_EX <= 0;
             imm_signed_EX <= 0;
@@ -130,32 +130,32 @@ module ID_EX_register(
         else if (~stall) begin
             // ----------------- control signals
             // EX
-            ALUSrcB_EX ;
-            ALUOperation_EX <= 0;
+            ALUSrcB_EX <= ALUSrcB_EX;
+            ALUOperation_EX <= ALUOperation_EX;
 
             // MEM
-            d_readM_EX <= 0;
-            d_writeM_EX <= 0;
+            d_readM_EX <= d_readM_EX;
+            d_writeM_EX <= d_writeM_EX;
 
             // WB
-            output_active_EX <= 0;
-            is_halted_EX <= 0; 
-            RegDst_EX <= 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX <= 0;
-            MemtoReg_EX <= 0; // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_EX <= output_active_EX;
+            is_halted_EX <= is_halted_EX; 
+            RegDst_EX <= RegDst_EX; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_EX <= RegWrite_EX;
+            MemtoReg_EX <= MemtoReg_EX; // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ------------------  Data latches
-            pc_EX <= 0;
-            branch_predicted_pc_EX <= 0;
-            instruction_EX <= 0;
+            pc_EX <= pc_EX;
+            branch_predicted_pc_EX <= branch_predicted_pc_EX;
+            instruction_EX <= instruction_EX;
             
-            i_type_branch_target_EX <= 0;
-            rs_EX <= 0;
-            rt_EX <= 0;
-            rd_EX
-            RF_data1_EX <= 0;
-            RF_data2_EX <= 0;
-            imm_signed_EX <= 0;
+            i_type_branch_target_EX <= i_type_branch_target_EX;
+            rs_EX <= rs_EX;
+            rt_EX <= rt_EX;
+            rd_EX <= rd_EX
+            RF_data1_EX <= RF_data1_EX;
+            RF_data2_EX <= RF_data2_EX;
+            imm_signed_EX <= imm_signed_EX;
         end
     end
     endmodule
