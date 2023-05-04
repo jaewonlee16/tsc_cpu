@@ -209,20 +209,117 @@ module ID_EX_register(
 
         input [1 : 0] rs_EX,
         input [1 : 0] rt_EX,
-        input [`WORD_SIZE - 1] RF_data1_EX,
-        input [`WORD_SIZE - 1] RF_data2_EX,
+        input [`WORD_SIZE - 1] B_EX,
         input [`WORD_SIZE - 1] imm_signed_EX,
         input [1 : 0] write_reg_addr_EX,
 
         output reg [1 : 0] rs_MEM,
         output reg [1 : 0] rt_MEM,
-        output reg [`WORD_SIZE - 1] RF_data1_MEM,
-        output reg [`WORD_SIZE - 1] RF_data2_MEM,
+        output reg [`WORD_SIZE - 1] B_MEM,      // for SWD`        
         output reg [`WORD_SIZE - 1] imm_signed_MEM,
         output [1 : 0] write_reg_addr_MEM
 
         input [`WORD_SIZE - 1] ALU_result_EX,
         output [`WORD_SIZE - 1] ALU_out_MEM
+    );
+
+    always @ (posedge clk) begin
+        if (~reset_n || flush) begin
+            // ----------------- control signals
+            // MEM
+            d_readM_MEM <= 0;
+            d_writeM_MEM <= 0;
+
+            // WB
+            output_active_MEM <= 0;
+            is_halted_MEM <= 0; 
+            RegDst_MEM <= 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM <= 0;
+            MemtoReg_MEM <= 0; // write 0: ALU, 1: MDR, 2: PC + 1
+
+            // ------------------  Data latches
+            pc_MEM <= 0;
+            instruction_MEM <= 0;
+            
+            rs_MEM <= 0;
+            rt_MEM <= 0;
+            B_MEM <= 0;
+            imm_signed_MEM <= 0;
+            write_reg_addr_MEM <= 0;
+            ALU_out_MEM <= 0;
+        end
+        else if (~stall) begin
+            // ----------------- control signals
+            // MEM
+            d_readM_MEM <= d_readM_EX;
+            d_writeM_MEM <= d_writeM_EX;
+
+            // WB
+            output_active_MEM <= output_active_EX;
+            is_halted_MEM <= is_halted_EX; 
+            RegDst_MEM <= RegDst_EX; // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM <= RegWrite_EX;
+            MemtoReg_MEM <= MemtoReg_EX; // write 0: ALU, 1: MDR, 2: PC + 1
+
+            // ------------------  Data latches
+            pc_MEM <= pc_EX;
+            instruction_MEM <= instruction_EX;
+            
+            rs_MEM <= rs_EX;
+            rt_MEM <= rt_EX;
+            B_MEM <= RF_data2_EX;
+            imm_signed_MEM <= imm_signed_EX;
+            write_reg_addr_MEM <= write_reg_addr_EX;
+            ALU_out_MEM <= ALU_result_EX;
+        end
+    end
+    endmodule
+
+    module MEM_WB_register(
+        input clk,
+        input reset_n,
+        input flush,
+        input stall,
+
+        // ----------------------------- control signal inputs and outputs
+        // input ports
+        // WB
+        input output_active_MEM,
+        input is_halted_MEM, 
+        input [1 : 0] RegDst_MEM, // write to 0: rt, 1: rd, 2: $2 (JAL)
+        input RegWrite_MEM,
+        input [1 : 0] MemtoReg_MEM, // write 0: ALU, 1: MDR, 2: PC + 1
+        
+        // output ports
+        // WB
+        output reg output_active_WB,
+        output reg is_halted_WB, 
+        output reg [1 : 0] RegDst_WB, // write to 0: rt, 1: rd, 2: $2 (JAL)
+        output reg RegWrite_WB,
+        output reg [1 : 0] MemtoReg_WB, // write 0: ALU, 1: MDR, 2: PC + 1
+        
+        // ----------------------------------- Data latch
+        input pc_MEM,
+        input instruction_MEM,
+
+        output reg pc_WB,
+        output reg instruction_WB,
+
+        input [1 : 0] rs_MEM,
+        input [1 : 0] rt_MEM,
+        input [`WORD_SIZE - 1] imm_signed_MEM,
+        input [1 : 0] write_reg_addr_MEM,
+
+        output reg [1 : 0] rs_WB,
+        output reg [1 : 0] rt_WB,
+        output reg [`WORD_SIZE - 1] imm_signed_WB,
+        output [1 : 0] write_reg_addr_WB
+
+        input [`WORD_SIZE - 1] ALU_out_MEM,
+        output [`WORD_SIZE - 1] ALU_out_WB
+
+        input [`WORD_SIZE - 1] MDR_MEM,
+        output [`WORD_SIZE - 1] MDR_WB
     );
 
     always @ (posedge clk) begin
