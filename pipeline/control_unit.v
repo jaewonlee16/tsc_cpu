@@ -4,7 +4,6 @@
 module control_unit(
      input [3 : 0] opcode,
      input [5 : 0] func_code,
-     input [1:0] ALU_Compare,
      
      output [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
      output RegWrite,
