@@ -4,7 +4,7 @@
 `include "opcodes.v"
 
 module hazard_control_unit
-   #(parameter DATA_FORWARDING = 1)
+   #(parameter DATA_FORWARDING)
    (input [3:0] opcode,
     input [5:0] func_code,
 

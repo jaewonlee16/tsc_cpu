@@ -3,8 +3,8 @@
 `include "constants.v"
 
 module branch_predictor
-  #(parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN,
-    parameter BTB_IDX_SIZE = 8)
+  #(parameter BRANCH_PREDICTOR,
+    parameter BTB_IDX_SIZE)
    (input                      clk,
     input                      reset_n, // clear BTB to all zero
     input                      update_tag, // update tag as soon as decode (when target is known)
