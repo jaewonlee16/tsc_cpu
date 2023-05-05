@@ -18,9 +18,9 @@ module hazard_control_unit
     input       Reg_write_EX,
     input       Reg_write_MEM,
     input       Reg_write_WB,
-    input [1:0] dest_EX             // write_reg_addr_EX, 
-    input [1:0] dest_MEM            // write_reg_addr_MEM, 
-    input [1:0] dest_WB            // write_reg_addr_WB, 
+    input [1:0] dest_EX,             // write_reg_addr_EX, 
+    input [1:0] dest_MEM,            // write_reg_addr_MEM, 
+    input [1:0] dest_WB,            // write_reg_addr_WB, 
 
     // load stall
     input       d_MEM_write_WB,
