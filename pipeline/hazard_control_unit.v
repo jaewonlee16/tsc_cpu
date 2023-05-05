@@ -36,7 +36,7 @@ module hazard_control_unit
     output reg  flush_IFID, // flush if
     output reg  flush_IDEX, // flush id
     output reg  pc_write,
-    output reg  ir_write,
+    output reg  ir_write
 );
     // --------------------------  type of instructions --------------------------- //
     // --------------------- the same wires from control_unit.v
