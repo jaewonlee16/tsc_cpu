@@ -14,7 +14,7 @@ module branch_predictor
                                                              // update as soon as decode
     input                      branch_correct_or_notCorrect, // if the predicted pc is same as the actual pc
     output                     tag_match, // tag matched PC
-    output reg [WORD_SIZE-1:0] branch_predicted_pc // predicted next PC
+    output [WORD_SIZE-1:0] branch_predicted_pc // predicted next PC
 );
 
    // Tag table
@@ -25,14 +25,42 @@ module branch_predictor
    reg [BTB_IDX_SIZE-1:0] btb[2**BTB_IDX_SIZE-1:0];
    // BTB index
    wire [BTB_IDX_SIZE-1:0] btb_idx;
-   assign btb_idx = pc[BTB_IDX_SIZE-1:0];
    // PC tag
    wire [WORD_SIZE-BTB_IDX_SIZE-1:0] pc_tag;
-   assign pc_tag = pc[WORD_SIZE-1:BTB_IDX_SIZE];
+   assign {pc_tag, btb_idx} = pc;
    // BTB hit
-   assign tag_match = (tags[btb_idx] == pc_tag);
 
-   wire [BTB_IDX_SIZE-1:0]           btb_idx_collided;
-   assign btb_idx_collided = pc_for_btb_update[BTB_IDX_SIZE-1:0];
-   wire [WORD_SIZE-BTB_IDX_SIZE-1:0] pc_tag_collided;
-   assign pc_tag_collided = pc_for_btb_update[WORD_SIZE-1:BTB_IDX_SIZE];
+   wire [BTB_IDX_SIZE-1:0]           btb_idx_for_btb_update;
+   wire [WORD_SIZE-BTB_IDX_SIZE-1:0] tag_for_btb_update;
+   assign {tag_for_btb_update, btb_idx_for_btb_update} = pc_for_btb_update;
+
+   // combinational logic for output
+   assign tag_match = (tags[btb_idx] == pc_tag);
+   assign  branch_predicted_pc = (tag_match && bht[btb_idx] >= 2'd2) ? btb[btb_idx] : pc + 1;
+
+   integer i; // index
+   
+   // btb and bht update logic
+   // sequential circuit
+   always @(posedge clk) begin
+      if (!reset_n) begin
+         for (i=0; i<2**BTB_IDX_SIZE; i=i+1) begin
+            // inititialize bht to weakly taken
+            // inititialize everything else to 0
+            tag_table[i] <= 0;
+            bht[i] <= 2'b10; // initialize to 'weakly taken'
+            btb[i] <= 0;
+         end
+      end
+      else begin
+         // On collision, at ID stage
+         //
+         // This should be done for all predictors including always taken.
+         if (update_tag) begin
+            tags[btb_idx_collided] <= pc_tag_collided;
+            btb[btb_idx_collided] <= branch_target;
+         end
+         if (update_bht) // TODO
+      end
+   end
+endmodule
