@@ -31,12 +31,12 @@ module hazard_control_unit
     input [1:0] rt_MEM,
     input [1:0] rt_WB,
 
-    output  stall_IFID, // stall pipeline IF_ID_register
-    output  stall_IDEX, // stall pipeline ID_EX_register
-    output  flush_IFID, // flush if
-    output  flush_IDEX, // flush id
-    output  pc_write,
-    output  ir_write,
+    // control signals
+    output reg  stall_IFID, // stall pipeline IF_ID_register
+    output reg  flush_IFID, // flush if
+    output reg  flush_IDEX, // flush id
+    output reg  pc_write,
+    output reg  ir_write,
 );
     // --------------------------  type of instructions --------------------------- //
     // --------------------- the same wires from control_unit.v
@@ -106,22 +106,42 @@ module hazard_control_unit
            (!DATA_FORWARDING && (use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM)) ||
            ((use_rs || use_rt) && d_MEM_read_WB && (rs_ID == rt_WB || rt_ID == rt_WB)) ? 1 : 0;
 
-   if (reg_write_stall_check || load_stall_check) begin
-     assign pc_write = 0;
-     assign ir_write = 0;
-     assign stall_IFID = 1;
-     assign flush_IDEX = 1;
-    
-    // -------------- control hazards ----------------- //
-    else if (i_branch_miss) begin
-      assign flush_IFID = 1;
-      assign flush_IDEX = 1;
-    end
+    always @ (*) begin
 
-    else if (jump_miss) begin
-      assign flush_IFID = 1;
-    end
+        if (reg_write_stall_check || load_stall_check) begin
+           stall_IFID = 1;
+           flush_IFID = 0;
+           flush_IDEX = 1;
+           pc_write = 0;
+           ir_write = 0;
+           
+        end 
+         // -------------- control hazards ----------------- //
+        else if (i_branch_miss) begin
+            stall_IFID = 0;
+            flush_IFID = 1;
+            flush_IDEX = 1;
+            pc_write = 1;
+            ir_write = 1;
+        end
 
-   end
+        else if (jump_miss) begin
+            stall_IFID = 0;
+            flush_IFID = 1;
+            flush_IDEX = 0;
+            pc_write = 1;
+            ir_write = 1;
+        end
+        
+        // ---------- default ---------------//
+        else begin
+            stall_IFID = 0;
+            flush_IFID = 0;
+            flush_IDEX = 0;
+            pc_write = 1;
+            ir_write = 1;
+
+        end
+    end
 
 endmodule
