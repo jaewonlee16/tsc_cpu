@@ -33,8 +33,8 @@ module hazard_control_unit
 
     output  stall_IFID, // stall pipeline IF_ID_register
     output  stall_IDEX, // stall pipeline ID_EX_register
-    output  flush_IFID, // reset IR to nop
-    output  flush_IDEX, // reset IR to nop
+    output  flush_IFID, // flush if
+    output  flush_IDEX, // flush id
     output  pc_write,
     output  ir_write,
 );
@@ -111,5 +111,17 @@ module hazard_control_unit
      assign ir_write = 0;
      assign stall_IFID = 1;
      assign flush_IDEX = 1;
+    
+    // -------------- control hazards ----------------- //
+    else if (i_branch_miss) begin
+      assign flush_IFID = 1;
+      assign flush_IDEX = 1;
+    end
+
+    else if (jump_miss) begin
+      assign flush_IFID = 1;
+    end
+
    end
-   
+
+endmodule
