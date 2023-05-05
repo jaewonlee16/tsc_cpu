@@ -1,3 +1,7 @@
+`timescale 1ns/1ns
+`include "opcodes.v"
+`include "constants.v"
+
 module branch_predictor
   #(parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN,
     parameter BTB_IDX_SIZE = 8)
