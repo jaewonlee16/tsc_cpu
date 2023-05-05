@@ -40,18 +40,18 @@ module datapath
         // --------------------------- cpu.v signals
         output [WORD_SIZE-1:0]       i_address,
         output [WORD_SIZE-1:0]       d_address,
-        output                       i_read,
-        output                       d_read,
-        output                       i_write,
-        output                       d_write,
+        output                       i_readM,
+        output                       d_readM,
+        output                       i_writeM,
+        output                       d_writeM,
         inout [WORD_SIZE-1:0]        i_data,
         inout [WORD_SIZE-1:0]        d_data,
         output reg [WORD_SIZE-1:0]   output_port,
         output [3:0]                 opcode,
         output [5:0]                 func_code,
         output                       is_halted, 
-        output [WORD_SIZE-1:0]       num_inst,
-        output reg [WORD_SIZE-1:0]   num_branch, // total number of branches
-        output reg [WORD_SIZE-1:0]   num_branch_miss // number of branch prediction miss
+        output [WORD_SIZE-1:0]       num_inst
         
     )
+        reg [WORD_SIZE-1:0]   num_branch; // total number of branches
+        reg [WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
