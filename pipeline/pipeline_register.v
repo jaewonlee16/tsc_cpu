@@ -316,7 +316,7 @@ module ID_EX_register(
         output [1 : 0] write_reg_addr_WB
 
         input [`WORD_SIZE - 1] ALU_out_MEM,
-        output [`WORD_SIZE - 1] ALU_out_WB
+        output [`WORD_SIZE - 1] ALU_out_WB,
 
         input [`WORD_SIZE - 1] MDR_MEM,
         output [`WORD_SIZE - 1] MDR_WB
