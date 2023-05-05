@@ -22,8 +22,8 @@ module datapath
         input isItype_Branch,
 
         // MEM signal
-        input d_readM,
-        input d_writeM,
+        input d_readM_ID,
+        input d_writeM_ID,
 
         // WB signal
         input output_active,
