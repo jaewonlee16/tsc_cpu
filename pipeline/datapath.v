@@ -27,7 +27,7 @@ module datapath
 
         // WB signal
         input output_active,
-        input is_halted,
+        input is_halted_ID,
         input [1 : 0] RegDst, // write to 0: rt, 1: rd, 2: $2 (JAL)
         input RegWrite,
         input [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
