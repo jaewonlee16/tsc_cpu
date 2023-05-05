@@ -10,6 +10,9 @@ module datapath
 
         // --------------------------- control_unit signals
         // ID signal
+        output [3:0] opcode,
+        output [5:0] func_code,
+
         input [1 : 0] PCSource,
         input isJump,
 
@@ -39,8 +42,6 @@ module datapath
         inout [WORD_SIZE-1:0]        i_data,
         inout [WORD_SIZE-1:0]        d_data,
         output reg [WORD_SIZE-1:0]   output_port,
-        output [3:0]                 opcode,
-        output [5:0]                 func_code,
         output                       is_halted, 
         output [WORD_SIZE-1:0]       num_inst
         
