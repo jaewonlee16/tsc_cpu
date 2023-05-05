@@ -1,5 +1,5 @@
 module IR (
-    input inputReady,
+    input clk,
     input reset_n,
     input nop,
     input IRWrite,
@@ -7,7 +7,7 @@ module IR (
     output reg [15 : 0] instruction
     );
     
-    always @ (posedge inputReady) begin
+    always @ (posedge clk) begin
         if (~reset_n) instruction <= 0;
         else if (nop) instruction <= {16{1'b1}};
         else if (IRWrite) instruction <= data;
