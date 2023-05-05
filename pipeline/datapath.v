@@ -14,8 +14,8 @@ module datapath
         input isJump,
 
         // EX signal
-        input reg [1 : 0] ALUSrcB,
-        input reg [3: 0] ALUOperation,
+        input [1 : 0] ALUSrcB,
+        input [3: 0] ALUOperation,
         input isItype_Branch,
 
         // MEM signal
@@ -31,11 +31,11 @@ module datapath
 
 
         // --------------------------- hazard_control_unit signals
-        input reg  stall_IFID, // stall pipeline IF_ID_register
-        input reg  flush_IFID, // flush if
-        input reg  flush_IDEX, // flush id
-        input reg  pc_write,
-        input reg  ir_write,
+        input stall_IFID, // stall pipeline IF_ID_register
+        input flush_IFID, // flush if
+        input flush_IDEX, // flush id
+        input pc_write,
+        input ir_write,
 
         // --------------------------- cpu.v signals
         output [WORD_SIZE-1:0]       i_address,
