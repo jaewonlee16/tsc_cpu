@@ -314,7 +314,7 @@ module datapath
             write_reg_addr_WB
 
             ALU_out_MEM(),
-            ALU_out_WB
+            ALU_out_WB(),
 
             MDR_MEM(),
             MDR_WB()
