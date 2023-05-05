@@ -33,24 +33,26 @@ module datapath
         input [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
 
         // --------------------------- cpu.v signals
-        output [WORD_SIZE-1:0]       i_address,
-        output [WORD_SIZE-1:0]       d_address,
+        output [`WORD_SIZE-1:0]       i_address,
+        output [`WORD_SIZE-1:0]       d_address,
         output                       i_readM,
         output                       d_readM,
         output                       i_writeM,
         output                       d_writeM,
-        inout [WORD_SIZE-1:0]        i_data,
-        inout [WORD_SIZE-1:0]        d_data,
-        output reg [WORD_SIZE-1:0]   output_port,
+        inout [`WORD_SIZE-1:0]        i_data,
+        inout [`WORD_SIZE-1:0]        d_data,
+        output reg [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
-        output [WORD_SIZE-1:0]       num_inst
+        output [`WORD_SIZE-1:0]       num_inst
         
     )
-        reg [WORD_SIZE-1:0]   num_branch; // total number of branches
-        reg [WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
+        // reg declaration
+        reg [`WORD_SIZE-1:0]   num_branch; // total number of branches
+        reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
+        reg [`WORD_SIZE - 1 : 0] pc;
 
 
-        // --------------- modules ----------------
+        // ------------------------------------ modules --------------------------------
         // hazard_control_unit
         hazard_control_unit #(.DATA_FORWARDING(DATA_FORWARDING))
         hazard (
@@ -58,8 +60,8 @@ module datapath
             .func_code(func_code),
 
             // flush .signals
-            .jump_miss(), // misprediction of unconditional branch
-            .i_branch_miss(), // misprediction of conditional branch
+            .jump_miss(jump_miss), // misprediction of unconditional branch
+            .i_branch_miss(i_branch_miss), // misprediction of conditional branch
 
             // signals that determine when to stall
             .rs_ID(), 
@@ -84,7 +86,7 @@ module datapath
             .stall_IFID(), // stall pipeline IF_ID_register
             .flush_IFID(), // flush if
             .flush_IDEX(), // flush id
-            .pc_write(),
+            .pc_write(pc_write),
             .ir_write()
         );
 
@@ -97,7 +99,7 @@ module datapath
             reset_n(), // clear BTB to all zero
             update_tag(), // update tag as soon as decode (when target is known)
             update_bht(), // update BHT when know prediction was correct or not
-            pc(), // the pc that was just fetched
+            pc(pc_IF), // the pc that was just fetched
             pc_for_btb_update(), // PC collision tag 
                              // always pc_id
             pc_real(),        // The actual pc that is calculated (not predicted)
@@ -105,8 +107,8 @@ module datapath
             branch_target_for_btb_update(), // branch target of jump and i type branch.
                                           // update as soon as decode
             branch_correct_or_notCorrect(), // if the predicted pc is same as the actual pc
-            tag_match(), // tag matched PC
-            branch_predicted_pc() // predicted next PC
+            tag_match(tag_match_IF), // tag matched PC
+            branch_predicted_pc(branch_predicted_pc_IF) // predicted next PC
         );   
 
         RF rf(
@@ -140,9 +142,12 @@ module datapath
             pc_IF(),
             branch_predicted_pc_IF(),
             instruction_IF(),
+            tag_match_ID(),
             pc_ID(),
             branch_predicted_pc_ID(),
-            instruction_ID()
+            instruction_ID(),
+            tag_match_ID()
+
 
         );
 
@@ -319,3 +324,46 @@ module datapath
             MDR_MEM(),
             MDR_WB()
         );
+
+
+
+        // ------------------------  Datapath  ------------------------ //
+        wire pc_write;
+
+        // IF
+        wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_IF
+        wire [`WORD_SIZE - 1 : 0] pc_IF;
+        assign pc_IF = pc;   // pc_IF : wire    pc: reg
+        assign i_address = pc;
+        wire tag_match_IF;
+
+        // ID
+        wire jump_miss;
+        wire tag_match_ID;
+
+        // EX
+        wire i_branch_miss;
+
+        // IF + ID + EX
+        // pc update logic
+        // sequential logic fot pc and num_branch_miss
+        always @ (posedge clk) begin
+            if (pc_write) begin
+                if (reset_n) begin
+                    pc <= 0;
+                    num_branch_miss <= 0;
+                end
+                else if (i_branch_miss) begin
+                    pc <= calculated_pc_EX;
+                    num_branch_miss <= num_branch_miss + 1;
+                end
+                else if (jump_miss) begin
+                    pc <= jump_target;
+                    num_branch_miss <= num_branch_miss + 1;
+                end
+                else
+                    pc <= branch_predicted_pc_IF;
+            end
+            else
+                pc <= pc;
+        end
