@@ -29,14 +29,6 @@ module datapath
         input RegWrite,
         input [1 : 0] MemtoReg, // write 0: ALU, 1: MDR, 2: PC + 1
 
-
-        // --------------------------- hazard_control_unit signals
-        input stall_IFID, // stall pipeline IF_ID_register
-        input flush_IFID, // flush if
-        input flush_IDEX, // flush id
-        input pc_write,
-        input ir_write,
-
         // --------------------------- cpu.v signals
         output [WORD_SIZE-1:0]       i_address,
         output [WORD_SIZE-1:0]       d_address,
@@ -55,3 +47,42 @@ module datapath
     )
         reg [WORD_SIZE-1:0]   num_branch; // total number of branches
         reg [WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
+
+
+        // --------------- modules ----------------
+        // hazard_control_unit
+        hazard_control_unit #(.DATA_FORWARDING(DATA_FORWARDING))
+        hazard (
+            .opcode(opcode),
+            .func_code(func_code),
+
+            // flush .signals
+            .jump_miss(), // misprediction of unconditional branch
+            .i_branch_miss(), // misprediction of conditional branch
+
+            // signals that determine when to stall
+            .rs_ID(), 
+            .rt_ID(), 
+            .Reg_write_EX(),
+            .Reg_write_MEM(),
+            .Reg_write_WB(),
+            .dest_EX(),             // write_reg_addr_EX 
+            .dest_MEM(),            // write_reg_addr_MEM 
+            .dest_WB(),            // write_reg_addr_WB 
+
+            // load stall
+            .d_MEM_write_WB(),
+            .d_MEM_read_EX(),
+            .d_MEM_read_mem(),
+            .d_MEM_read_WB(),
+            .rt_EX(), 
+            .rt_MEM(),
+            .rt_WB(),
+
+            // control signals
+            .stall_IFID(), // stall pipeline IF_ID_register
+            .flush_IFID(), // flush if
+            .flush_IDEX(), // flush id
+            .pc_write(),
+            .ir_write()
+        );
