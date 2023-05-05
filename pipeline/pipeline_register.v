@@ -9,9 +9,11 @@ module IF_ID_register(
     input pc_IF,
     input branch_predicted_pc_IF,
     input instruction_IF,
+    input tag_match_IF,
     output reg pc_ID,
     output reg branch_predicted_pc_ID,
-    output reg instruction_ID
+    output reg instruction_ID,
+    output reg tag_match_ID
 );
 
     always @ (posedge clk) begin
@@ -19,11 +21,13 @@ module IF_ID_register(
             pc_ID <= 0;
             branch_predicted_pc_ID <= 0;
             instruction_ID <= {`OPCODE_NOP, 12{0}};
+            tag_match_ID <= 0;
         end
         else if (~stall){
             pc_ID <= pc_IF;
             branch_predicted_pc_ID <= branch_predicted_pc_IF;
             instruction_ID <= instruction_IF;
+            tag_match_ID <= tag_match_IF;
         }
     end
     endmodule
