@@ -50,6 +50,7 @@ module datapath
         reg [`WORD_SIZE-1:0]   num_branch; // total number of branches
         reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
         reg [`WORD_SIZE - 1 : 0] pc;
+        reg reset_after;
 
 
         // ------------------------------------ modules --------------------------------
@@ -333,6 +334,15 @@ module datapath
             .MDR_MEM(d_data),
             .MDR_WB(MDR_WB)
         );
+        
+        IR ir(
+            .clk(clk),
+            .reset_n(reset_n),
+
+            .IRWrite(ir_write),
+            .data(i_data),
+            .instruction()
+        );
 
 
 
@@ -408,7 +418,7 @@ module datapath
                         {pc[15:12], jump_target_imm};
         assign i_type_branch_target_ID = (pc_ID + 1) + imm_signed_ID;
         assign branch_target = isJump ? jump_target :i_type_branch_target_ID;
-        assign jump_miss = isJump ? (jump_target != branch_predicted_pc_ID) : 1;
+        assign jump_miss = isJump && (jump_target != branch_predicted_pc_ID) ? 1 : 0;
 
         // If this is a branch instruction and BTB tag match failed in IF,
         // update tag in ID stage.
@@ -486,9 +496,14 @@ module datapath
         // sequential logic for pc and num_branch_miss
         always @ (posedge clk) begin
             if (pc_write) begin
-                if (reset_n) begin
+                if (~reset_n) begin
                     pc <= 0;
                     num_branch_miss <= 0;
+                    reset_after <= 0;
+                end
+                else if (reset_after) begin
+                    pc <= 0;
+                    reset_after <= 0;
                 end
                 // i_branch first becaus it is instruction from EX stage
                 else if (i_branch_miss) begin 
@@ -508,7 +523,7 @@ module datapath
 
         // num_branch
         always @ (posedge clk) begin
-            if (reset_n) num_branch <= 0;
+            if (~reset_n) num_branch <= 0;
             else if (isItype_Branch_EX || isJump_EX) num_branch <= num_branch + 1;
             else num_branch <= num_branch;
         end
@@ -574,7 +589,7 @@ module datapath
         assign opcode_WB = instruction_WB[15 : 12];
 
         always @ (posedge clk) begin
-            if (reset_n) num_inst <= 0;
+            if (~reset_n) num_inst <= 1;
             else if (opcode_WB == `OPCODE_NOP) num_inst <= num_inst;
             else num_inst <= num_inst + 1;
         end

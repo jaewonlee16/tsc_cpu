@@ -63,7 +63,7 @@ module control_unit(
     assign isItype_Branch = ( (opcode == `OPCODE_BNE)
                 ||(opcode == `OPCODE_BEQ)
                 ||(opcode == `OPCODE_BGZ)
-                ||(opcode == `OPCODE_BLZ) );
+                ||(opcode == `OPCODE_BLZ) ) ? 1 : 0;
     // is Load or Store
     assign isItype_Memory = ( (opcode == `OPCODE_LWD)
                             || (opcode == `OPCODE_SWD) );

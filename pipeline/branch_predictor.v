@@ -60,7 +60,7 @@ module branch_predictor
          for (i=0; i<2**BTB_IDX_SIZE; i=i+1) begin
             // inititialize bht to weakly taken
             // inititialize everything else to 0
-            tag_table[i] <= 0;
+            tag_table[i] <= 1;
             bht[i] <= 2'b10; // initialize to 'weakly taken'
             btb[i] <= 0;
          end

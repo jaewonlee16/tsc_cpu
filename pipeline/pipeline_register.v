@@ -131,7 +131,7 @@ module ID_EX_register(
             // ------------------  Data latches
             pc_EX <= 0;
             branch_predicted_pc_EX <= 0;
-            instruction_EX <= {`OPCODE_NOP, {12{0}}};
+            instruction_EX <= {`OPCODE_NOP, {12{1'b0}}};
             
             i_type_branch_target_EX <= 0;
             rs_EX <= 0;
@@ -250,7 +250,7 @@ module ID_EX_register(
 
             // ------------------  Data latches
             pc_MEM <= 0;
-            instruction_MEM <= {`OPCODE_NOP, {12{0}}};
+            instruction_MEM <= {`OPCODE_NOP, {12{1'b0}}};
             
             rs_MEM <= 0;
             rt_MEM <= 0;
@@ -345,7 +345,7 @@ module ID_EX_register(
 
             // ------------------  Data latches
             pc_WB <= 0;
-            instruction_WB <= {`OPCODE_NOP, {12{0}}};
+            instruction_WB <= {`OPCODE_NOP, {12{1'b0}}};
             
             rs_WB <= 0;
             rt_WB <= 0;
