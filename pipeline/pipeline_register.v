@@ -97,7 +97,7 @@ module ID_EX_register(
     output reg [`WORD_SIZE - 1 : 0] i_type_branch_target_EX,   // last because branch ends at EX
     output reg [1 : 0] rs_EX,
     output reg [1 : 0] rt_EX,
-    output reg [1 : 0] rd_EX
+    output reg [1 : 0] rd_EX,
     output reg [`WORD_SIZE - 1] RF_data1_EX,
     output reg [`WORD_SIZE - 1] RF_data2_EX,
     output reg [`WORD_SIZE - 1] imm_signed_EX,
