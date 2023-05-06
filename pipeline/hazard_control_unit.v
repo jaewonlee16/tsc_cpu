@@ -23,10 +23,8 @@ module hazard_control_unit
     input [1:0] dest_WB,            // write_reg_addr_WB, 
 
     // load stall
-    input       d_MEM_write_WB,
     input       d_MEM_read_EX,
     input       d_MEM_read_mem,
-    input       d_MEM_read_WB,
     input [1:0] rt_EX, 
     input [1:0] rt_MEM,
     input [1:0] rt_WB,
@@ -104,7 +102,8 @@ module hazard_control_unit
    assign load_stall_check = 
            ((use_rs || use_rt) && d_MEM_read_EX && (rs_ID == rt_EX || rt_ID == rt_EX)) ||
            (!DATA_FORWARDING && (use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM)) ||
-           ((use_rs || use_rt) && d_MEM_read_WB && (rs_ID == rt_WB || rt_ID == rt_WB)) ? 1 : 0;
+           // ((use_rs || use_rt) && d_MEM_read_WB && (rs_ID == rt_WB || rt_ID == rt_WB)) 
+           ? 1 : 0;
 
     always @ (*) begin
 
