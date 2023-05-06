@@ -453,13 +453,13 @@ module datapath
         wire [1 : 0] forwardA_src, forwardB_src;
 
         // forwardA
-        assign forwardA_src = DATA_FORWARDING && RegWrite_MEM && rs_EX == write_reg_MEM ? `FORWARD_SRC_MEM: 
-                              DATA_FORWARDING && RegWrite_WB && rs_EX == write_reg_WB ? `FORWARD_SRC_WB:
+        assign forwardA_src = DATA_FORWARDING && RegWrite_MEM && rs_EX == write_reg_addr_MEM ? `FORWARD_SRC_MEM: 
+                              DATA_FORWARDING && RegWrite_WB && rs_EX == write_reg_addr_WB ? `FORWARD_SRC_WB:
                                                                                    `FORWARD_SRC_RF;
            
         // forwardB
-        assign forwardB_src = DATA_FORWARDING && RegWrite_MEM && rt_EX == write_reg_MEM ? `FORWARD_SRC_MEM: 
-                              DATA_FORWARDING && RegWrite_WB && rt_EX == write_reg_WB ? `FORWARD_SRC_WB:
+        assign forwardB_src = DATA_FORWARDING && RegWrite_MEM && rt_EX == write_reg_addr_MEM ? `FORWARD_SRC_MEM: 
+                              DATA_FORWARDING && RegWrite_WB && rt_EX == write_reg_addr_WB ? `FORWARD_SRC_WB:
                                                                                    `FORWARD_SRC_RF;
 
         // ----------- ALU.v wires -----------
@@ -470,7 +470,7 @@ module datapath
                           RF_data1_EX; 
         assign ALU_in_B = ALUSrcB_EX == `ALUSRCB_ZERO ? 0:
                           ALUSrcB_EX == `ALUSRCB_IMM ? imm_signed_EX:
-                          forwardB_src == `FORWARD_SRC_MEM ? ALU_out_MEM:;
+                          forwardB_src == `FORWARD_SRC_MEM ? ALU_out_MEM:
                           forwardB_src == `FORWARD_SRC_WB ? RF_write_data:
                           RF_data2_EX; 
 

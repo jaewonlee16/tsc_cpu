@@ -95,7 +95,11 @@ module hazard_control_unit
                                || (use_rs && Reg_write_MEM && rs_ID == dest_MEM) 
                                || (use_rt && Reg_write_EX  && rt_ID == dest_EX) 
                                || (use_rt && Reg_write_MEM && rt_ID == dest_MEM)) ? 1 : 0;
-                          
+    
+    wire data_forwarding_stall_check;
+    assign data_forwarding_stall_check = DATA_FORWARDING
+                               &&((isRtype_Jump && Reg_write_EX  && rs_ID == dest_EX) 
+                               || (isRtype_Jump && Reg_write_MEM && rs_ID == dest_MEM)) ? 1 : 0;                  
 
    wire load_stall_check;
    assign load_stall_check = 
@@ -105,7 +109,7 @@ module hazard_control_unit
 
     always @ (*) begin
 
-        if (reg_write_stall_check || load_stall_check) begin
+        if (reg_write_stall_check || load_stall_check || data_forwarding_stall_check) begin
            stall_IFID = 1;
            flush_IFID = 0;
            flush_IDEX = 1;
