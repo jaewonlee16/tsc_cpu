@@ -64,8 +64,8 @@ module datapath
             .i_branch_miss(i_branch_miss), // misprediction of conditional branch
 
             // signals that determine when to stall
-            .rs_ID(), 
-            .rt_ID(), 
+            .rs_ID(rs_ID), 
+            .rt_ID(rt_ID), 
             .Reg_write_EX(),
             .Reg_write_MEM(),
             .Reg_write_WB(),
@@ -83,11 +83,11 @@ module datapath
             .rt_WB(),
 
             // control signals
-            .stall_IFID(), // stall pipeline IF_ID_register
-            .flush_IFID(), // flush if
-            .flush_IDEX(), // flush id
+            .stall_IFID(stall_IFID), // stall pipeline IF_ID_register
+            .flush_IFID(flush_IFID), // flush if
+            .flush_IDEX(flush_IDEX), // flush id
             .pc_write(pc_write),
-            .ir_write()
+            .ir_write(ir_write)
         );
 
         // branch_predictor
@@ -102,9 +102,9 @@ module datapath
             pc(pc_IF), // the pc that was just fetched
 
             // ID
-            update_tag(), // update tag as soon as decode (when target is known)
-            pc_for_btb_update(), // PC collision tag 
-            branch_target_for_btb_update(), // branch target of jump and i type branch.
+            update_tag(update_tag), // update tag as soon as decode (when target is known)
+            pc_for_btb_update(pc_ID), // PC collision tag 
+            branch_target_for_btb_update(branch_target), // branch target of jump and i type branch.
 
             // ID or EX
             update_bht(), // update BHT when know prediction was correct or not
@@ -121,11 +121,11 @@ module datapath
             .write(),
             .clk(clk),
             .reset_n(reset_n),
-            .addr1(),
-            .addr2(),
+            .addr1(rs_ID),
+            .addr2(rt_ID),
             .addr3(),
-            .data1(),
-            .data2(),
+            .data1(RF_data1_ID),
+            .data2(RF_data2_ID),
             .data3()
         );
         
@@ -148,40 +148,40 @@ module datapath
             pc_IF(pc_IF),
             branch_predicted_pc_IF(branch_predicted_pc_IF),
             instruction_IF(instruction_IF),
-            tag_match_ID(),
-            pc_ID(),
-            branch_predicted_pc_ID(),
-            instruction_ID(),
-            tag_match_ID()
+            tag_match_IF(tag_match_IF),
+            pc_ID(pc_ID),
+            branch_predicted_pc_ID(branch_predicted_pc_ID),
+            instruction_ID(instruction_ID),
+            tag_match_ID(tag_match_ID)
 
 
         );
 
         ID_EX_register ID_to_EX(
-            clk(),
-            reset_n(),
-            flush(),
-            stall(),
+            clk(clk),
+            reset_n(reset_n),
+            flush(flush_IDEX),
+            stall(stall_IDEX),
 
             // ----------------------------- control signal inputs and outputs
-            // ports
+            // input ports
             // EX
-            ALUSrcB_ID(),
-            ALUOperation_ID(),
-            isItype_Branch_ID(),
+            ALUSrcB_ID(ALUSrcB),
+            ALUOperation_ID(ALUOperation),
+            isItype_Branch_ID(isItype_Branch),
 
             // MEM
-            d_readM_ID(),
-            d_writeM_ID(),
+            d_readM_ID(d_readM_ID),
+            d_writeM_ID(d_writeM_ID),
 
             // WB
-            output_active_ID(),
-            is_halted_ID(), 
-            RegDst_ID(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_ID(),
-            MemtoReg_ID(), // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_ID(output_active),
+            is_halted_ID(is_halted_ID), 
+            RegDst_ID(RegDst), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_ID(RegWrite),
+            MemtoReg_ID(MemtoReg), // write 0: ALU, 1: MDR, 2: PC + 1
             
-            // ports
+            // output ports
             // EX
             ALUSrcB_EX(),
             ALUOperation_EX(),
@@ -199,28 +199,28 @@ module datapath
             MemtoReg_EX(), // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ----------------------------------- Data latch
-            pc_ID(),
-            branch_predicted_pc_ID(),
-            instruction_ID(),
+            pc_ID(pc_ID),
+            branch_predicted_pc_ID(branch_predicted_pc_ID),
+            instruction_ID(instruction_ID),
 
             pc_EX(),
             branch_predicted_pc_EX(),    // last because branch ends at EX
             instruction_EX(),
 
-            i_type_branch_target_ID(),
-            rs_ID(),
-            rt_ID(),
-            rd_ID
-            RF_data1_ID(),
-            RF_data2_ID(),
-            imm_signed_ID(),
-            write_reg_addr_ID(),
+            i_type_branch_target_ID(i_type_branch_target_ID),
+            rs_ID(rs_ID),
+            rt_ID(rt_ID),
+            rd_ID(rd_ID),
+            RF_data1_ID(RF_data1_ID),
+            RF_data2_ID(RF_data2_ID),
+            imm_signed_ID(imm_signed_ID),
+            write_reg_addr_ID(write_reg_addr_ID),
 
             
             i_type_branch_target_EX(),   // last because branch ends at EX
             rs_EX(),
             rt_EX(),
-            rd_EX
+            rd_EX(),
             RF_data1_EX(),
             RF_data2_EX(),
             imm_signed_EX(),
@@ -348,6 +348,7 @@ module datapath
 
         // hazard_control wires
         wire pc_write;
+        wire ir_write;
 
         // assign
         assign pc_IF = pc;   // pc_IF : wire    pc: reg
@@ -355,8 +356,53 @@ module datapath
         assign instruction_IF = i_data;
 
         // ------------------------- ID STAGE
-        wire jump_miss;
+        // pipeline register wires
+        wire [`WORD_SIZE - 1 : 0] pc_ID;
+        wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_ID;
+        wire [`WORD_SIZE - 1 : 0] instruction_ID;
         wire tag_match_ID;
+
+        // instruction decode
+        wire [1:0]           rs_ID, rt_ID, rd_ID;
+        wire [7:0]           imm;
+        wire [11:0]          jump_target_imm;
+        wire [`WORD_SIZE-1:0] imm_signed_ID;
+        wire [15 : 0] RF_data1_ID;
+        wire [15 : 0] RF_data2_ID;
+        wire [1 : 0] write_reg_addr_ID;
+
+        wire [`WORD_SIZE - 1 : 0] jump_target;
+        wire [`WORD_SIZE - 1 : 0] i_type_branch_target_ID;
+        wire [`WORD_SIZE - 1 : 0] branch_target;
+        wire jump_miss;
+        wire update_tag;
+
+        assign opcode = instruction_ID[15:12];
+        assign func_code = instruction_ID[5:0];
+
+        assign rs_ID = instruction_ID[11:10];
+        assign rt_ID = instruction_ID[9:8];
+        assign rd_ID = instruction_ID[7:6];
+        
+        assign imm = instruction_ID[7:0];
+        assign imm_signed_ID = {{8{imm[7]}}, imm}; //sign-extended
+        assign jump_target_imm = instruction_ID[11:0];
+        assign write_reg_addr_ID = (RegDst == `REGDST_RT) ? rt_ID :
+                                   (RegDst == `REGDST_RD) ? rd_ID :
+                                    2'd2;
+
+        // branch predictor ID
+        assign jump_target = (opcode == `OPCODE_RTYPE && (func_code == `FUNC_JPR || func_code == `FUNC_JRL)) ?
+                        RF_data1_ID :
+                        {pc[15:12], jump_target_imm};
+        assign i_type_branch_target_ID = (pc_id + 1) + imm_signed_ID;
+        assign branch_target = isJump ? jump_target :i_type_branch_target_ID;
+        assign jump_miss = isJump ? (jump_target != branch_predicted_pc_ID) : 1;
+
+        // If this is a branch instruction and BTB tag match failed in IF,
+        // update tag in ID stage.
+        assign update_tag = ((isJump || isItype_Branch_ID) && !tag_match_ID) ? 1 : 0;
+
 
         // ------------------------- EX STAGE
         wire i_branch_miss;
