@@ -31,22 +31,28 @@ module branch_predictor
     parameter BTB_IDX_SIZE = 8;
     
    // Tag table
-   reg [`WORD_SIZE-BTB_IDX_SIZE-1:0] tag_table[2**BTB_IDX_SIZE-1:0];
+   reg [`WORD_SIZE - BTB_IDX_SIZE - 1:0] tag_table[2**BTB_IDX_SIZE-1:0];
+   
    // Branch history table
-   reg [1:0] bht[2**BTB_IDX_SIZE-1:0];
+   reg [1:0] bht[2**BTB_IDX_SIZE - 1:0];
+   
    // Branch target buffer
    reg [BTB_IDX_SIZE-1:0] btb[2**BTB_IDX_SIZE-1:0];
-   // BTB index
+   
+   // BTB index, pc tag
    wire [BTB_IDX_SIZE-1:0] btb_idx;
-   // PC tag
-   wire [`WORD_SIZE-BTB_IDX_SIZE-1:0] pc_tag;
+   wire [`WORD_SIZE - BTB_IDX_SIZE - 1:0] pc_tag;
    assign {pc_tag, btb_idx} = pc;
-   // BTB hit
 
+   // BTB update
    wire [BTB_IDX_SIZE-1:0]           btb_idx_for_btb_update;
-   wire [`WORD_SIZE-BTB_IDX_SIZE-1:0] tag_for_btb_update;
+   wire [`WORD_SIZE - BTB_IDX_SIZE - 1:0] tag_for_btb_update;
    assign {tag_for_btb_update, btb_idx_for_btb_update} = pc_for_btb_update;
 
+   // BHT update
+   wire [BTB_IDX_SIZE - 1:0]           btb_idx_for_bht_update;
+   assign  btb_idx_for_bht_update = pc_for_bht_update[BTB_IDX_SIZE-1:0];
+   
    // combinational logic for output
    assign tag_match = (tag_table[btb_idx] == pc_tag);
    assign  branch_predicted_pc = (tag_match && bht[btb_idx] >= 2'd2) ? btb[btb_idx] : pc + 1;
@@ -61,7 +67,7 @@ module branch_predictor
             // inititialize bht to weakly taken
             // inititialize everything else to 0
             tag_table[i] <= 1;
-            bht[i] <= 2'b10; // initialize to 'weakly taken'
+            bht[i] <= 2'd3; // initialize to 3
             btb[i] <= 0;
          end
       end
@@ -73,7 +79,13 @@ module branch_predictor
             tag_table[btb_idx_for_btb_update] <= tag_for_btb_update;
             btb[btb_idx_for_btb_update] <= branch_target_for_btb_update;
          end
-         // if (update_bht) // TODO
+         if (update_bht && BRANCH_PREDICTOR == `BRANCH_SATURATION_COUNTER) begin
+            if (branch_correct_or_notCorrect) begin
+                bht[btb_idx_for_bht_update] <= bht[btb_idx_for_bht_update] == 2'd3 ? bht[btb_idx_for_bht_update] : bht[btb_idx_for_bht_update] + 1;
+            end
+            else
+                bht[btb_idx_for_bht_update] <= bht[btb_idx_for_bht_update] == 2'd0 ? bht[btb_idx_for_bht_update] : bht[btb_idx_for_bht_update] - 1;         
+         end
       end
    end
 endmodule

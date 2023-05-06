@@ -29,7 +29,7 @@ module cpu(
 
 	// TODO : Implement your pipelined CPU!
 	parameter DATA_FORWARDING = 0;
-    parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN;
+    parameter BRANCH_PREDICTOR = `BRANCH_SATURATION_COUNTER;
     
         assign i_readM = 1;
         assign i_writeM = 0;
