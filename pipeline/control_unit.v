@@ -73,7 +73,7 @@ module control_unit(
     
     // is R type jump instruction                        
     assign isRtype_Jump = (opcode == `typeR 
-                       && (func_code == (`FUNC_JPR  || func_code == `FUNC_JRL)));
+                       && (func_code == `FUNC_JPR  || func_code == `FUNC_JRL));
     
     
     
