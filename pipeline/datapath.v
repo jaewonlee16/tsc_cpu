@@ -340,6 +340,7 @@ module datapath
         wire stall_IFID, stall_IDEX, stall_EXMEM, stall_MEMWB;
 
         //  ----------------------- IF STAGE --------------------------
+        // -------------------------------------------------------------
         // pipeline register wires
         wire [`WORD_SIZE - 1 : 0] pc_IF;
         wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_IF;
@@ -356,6 +357,7 @@ module datapath
         assign instruction_IF = i_data;
 
         // ------------------------- ID STAGE ----------------------------
+        // ---------------------------------------------------------------
         // pipeline register wires
         wire [`WORD_SIZE - 1 : 0] pc_ID;
         wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_ID;
@@ -405,6 +407,7 @@ module datapath
 
 
         // ------------------------- EX STAGE ------------------------------
+        // -----------------------------------------------------------------
         // -- pipeline register wires -- //
         // control signal wires
         wire [1 : 0] ALUSrcB_EX;
@@ -459,8 +462,9 @@ module datapath
                              || opcode_EX == `OPCODE_BLZ && ALU_Compare == `ALU_SMALL) ? 1 : 0;  // less than
         assign calculated_pc_EX = (isItype_Branch_EX && isBranchTaken) ? i_type_branch_target_EX : pc_EX + 1;
         assign update_bht = isItype_Branch_EX || isJump;
-        assign branch_correct_or_notCorrect = branch_predicted_pc_EX == calculated_pc_EX;
-        assign i_branch_miss = ~branch_correct_or_notCorrect;
+        assign branch_correct_or_notCorrect = isItype_Branch_EX ? branch_predicted_pc_EX == calculated_pc_EX:
+                                              isJump ? ~jump_miss : 1;
+        assign i_branch_miss = isItype_Branch && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
 
         // ID + EX
         assign pc_for_bht_update = isItype_Branch_EX ? pc_EX:
@@ -490,3 +494,7 @@ module datapath
             else // stall
                 pc <= pc;
         end
+
+        // --------------------------- MEM -------------------------------//
+        // ---------------------------------------------------------------//
+        // pipeline wires
