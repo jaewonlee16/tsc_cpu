@@ -213,13 +213,13 @@ module ID_EX_register(
 
         input [1 : 0] rs_EX,
         input [1 : 0] rt_EX,
-        input [`WORD_SIZE - 1] B_EX,
+        input [`WORD_SIZE - 1] RF_data1_EX,
         input [`WORD_SIZE - 1] imm_signed_EX,
         input [1 : 0] write_reg_addr_EX,
 
         output reg [1 : 0] rs_MEM,
         output reg [1 : 0] rt_MEM,
-        output reg [`WORD_SIZE - 1] B_MEM,      // for SWD`        
+        output reg [`WORD_SIZE - 1] RF_data1_MEM,      // for SWD`        
         output reg [`WORD_SIZE - 1] imm_signed_MEM,
         output [1 : 0] write_reg_addr_MEM
 
