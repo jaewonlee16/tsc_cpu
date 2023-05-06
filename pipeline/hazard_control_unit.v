@@ -81,7 +81,7 @@ module hazard_control_unit
     
     // is R type jump instruction                        
     assign isRtype_Jump = (opcode == `typeR 
-                       && (func_code == (`FUNC_JPR  || func_code == `FUNC_JRL)));
+                       && (func_code == `FUNC_JPR  || func_code == `FUNC_JRL));
 
     wire use_rs, use_rt;
     assign use_rs = isRtype_Arithmetic || isItype_Memory || isItype_Branch || isRtype_Jump 
