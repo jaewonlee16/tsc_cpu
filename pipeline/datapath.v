@@ -95,26 +95,26 @@ module datapath
                             BTB_IDX_SIZE.(BTB_IDX_SIZE))
         bp (
 
-            clk(clk),
-            reset_n(reset_n), // clear BTB to all zero
+            .clk(clk),
+            .reset_n(reset_n), // clear BTB to all zero
 
             // IF
-            pc(pc_IF), // the pc that was just fetched
+            .pc(pc_IF), // the pc that was just fetched
 
             // ID
-            update_tag(update_tag), // update tag as soon as decode (when target is known)
-            pc_for_btb_update(pc_ID), // PC collision tag 
-            branch_target_for_btb_update(branch_target), // branch target of jump and i type branch.
+            .update_tag(update_tag), // update tag as soon as decode (when target is known)
+            .pc_for_btb_update(pc_ID), // PC collision tag 
+            .branch_target_for_btb_update(branch_target), // branch target of jump and i type branch.
 
             // ID or EX
-            update_bht(update_bht), // update BHT when know prediction was correct or not
-            pc_for_bht_update(pc_for_bht_update),        // The actual pc that is calculated (not predicted)
+            .update_bht(update_bht), // update BHT when know prediction was correct or not
+            .pc_for_bht_update(pc_for_bht_update),        // The actual pc that is calculated (not predicted)
                             // pc_ex(i type branch) or pc_id(jump)
-            branch_correct_or_notCorrect(branch_correct_or_notCorrect), // if the predicted pc is same as the actual pc
+            .branch_correct_or_notCorrect(branch_correct_or_notCorrect), // if the predicted pc is same as the actual pc
 
             // IF
-            tag_match(tag_match_IF), // tag matched PC
-            branch_predicted_pc(branch_predicted_pc_IF) // predicted next PC
+            .tag_match(tag_match_IF), // tag matched PC
+            .branch_predicted_pc(branch_predicted_pc_IF) // predicted next PC
         );   
 
         RF rf(
@@ -143,198 +143,198 @@ module datapath
 
         // pipeline_register.v
         IF_ID_register IF_to_ID(
-            clk(clk),
-            reset_n(reset_n),
-            flush(flush_IFID),
-            stall(stall_IFID),
-            pc_IF(pc_IF),
-            branch_predicted_pc_IF(branch_predicted_pc_IF),
-            instruction_IF(instruction_IF),
-            tag_match_IF(tag_match_IF),
-            pc_ID(pc_ID),
-            branch_predicted_pc_ID(branch_predicted_pc_ID),
-            instruction_ID(instruction_ID),
-            tag_match_ID(tag_match_ID)
+            .clk(clk),
+            .reset_n(reset_n),
+            .flush(flush_IFID),
+            .stall(stall_IFID),
+            .pc_IF(pc_IF),
+            .branch_predicted_pc_IF(branch_predicted_pc_IF),
+            .instruction_IF(instruction_IF),
+            .tag_match_IF(tag_match_IF),
+            .pc_ID(pc_ID),
+            .branch_predicted_pc_ID(branch_predicted_pc_ID),
+            .instruction_ID(instruction_ID),
+            .tag_match_ID(tag_match_ID)
 
 
         );
 
         ID_EX_register ID_to_EX(
-            clk(clk),
-            reset_n(reset_n),
-            flush(flush_IDEX),
-            stall(stall_IDEX),
+            .clk(clk),
+            .reset_n(reset_n),
+            .flush(flush_IDEX),
+            .stall(stall_IDEX),
 
             // ----------------------------- control signal inputs and outputs
             // input ports
-            isJump_ID(isJump),
+            .isJump_ID(isJump),
 
             // EX
-            ALUSrcB_ID(ALUSrcB),
-            ALUOperation_ID(ALUOperation),
-            isItype_Branch_ID(isItype_Branch),
+            .ALUSrcB_ID(ALUSrcB),
+            .ALUOperation_ID(ALUOperation),
+            .isItype_Branch_ID(isItype_Branch),
 
             // MEM
-            d_readM_ID(d_readM_ID),
-            d_writeM_ID(d_writeM_ID),
+            .d_readM_ID(d_readM_ID),
+            .d_writeM_ID(d_writeM_ID),
 
             // WB
-            output_active_ID(output_active),
-            is_halted_ID(is_halted_ID), 
-            RegDst_ID(RegDst), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_ID(RegWrite),
-            MemtoReg_ID(MemtoReg), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_ID(output_active),
+            .is_halted_ID(is_halted_ID), 
+            .RegDst_ID(RegDst), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_ID(RegWrite),
+            .MemtoReg_ID(MemtoReg), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // output ports
-            isJump_EX(isJump_EX),
+            .isJump_EX(isJump_EX),
 
             // EX
-            ALUSrcB_EX(ALUSrcB_EX),
-            ALUOperation_EX(ALUOperation_EX),
-            isItype_Branch_EX(isItype_Branch_EX),
+            .ALUSrcB_EX(ALUSrcB_EX),
+            .ALUOperation_EX(ALUOperation_EX),
+            .isItype_Branch_EX(isItype_Branch_EX),
 
             // MEM
-            d_readM_EX(d_readM_EX),
-            d_writeM_EX(d_writeM_EX),
+            .d_readM_EX(d_readM_EX),
+            .d_writeM_EX(d_writeM_EX),
 
             // WB
-            output_active_EX(output_active_EX),
-            is_halted_EX(is_halted_EX), 
-            RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX(RegWrite_EX),
-            MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_EX(output_active_EX),
+            .is_halted_EX(is_halted_EX), 
+            .RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_EX(RegWrite_EX),
+            .MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ----------------------------------- Data latch
-            pc_ID(pc_ID),
-            branch_predicted_pc_ID(branch_predicted_pc_ID),
-            instruction_ID(instruction_ID),
+            .pc_ID(pc_ID),
+            .branch_predicted_pc_ID(branch_predicted_pc_ID),
+            .instruction_ID(instruction_ID),
 
-            pc_EX(pc_EX),
-            branch_predicted_pc_EX(branch_predicted_pc_EX),    // last because branch ends at EX
-            instruction_EX(instruction_EX),
+            .pc_EX(pc_EX),
+            .branch_predicted_pc_EX(branch_predicted_pc_EX),    // last because branch ends at EX
+            .instruction_EX(instruction_EX),
 
-            i_type_branch_target_ID(i_type_branch_target_ID),
-            rs_ID(rs_ID),
-            rt_ID(rt_ID),
-            rd_ID(rd_ID),
-            RF_data1_ID(RF_data1_ID),
-            RF_data2_ID(RF_data2_ID),
-            imm_signed_ID(imm_signed_ID),
-            write_reg_addr_ID(write_reg_addr_ID),
+            .i_type_branch_target_ID(i_type_branch_target_ID),
+            .rs_ID(rs_ID),
+            .rt_ID(rt_ID),
+            .rd_ID(rd_ID),
+            .RF_data1_ID(RF_data1_ID),
+            .RF_data2_ID(RF_data2_ID),
+            .imm_signed_ID(imm_signed_ID),
+            .write_reg_addr_ID(write_reg_addr_ID),
 
             
-            i_type_branch_target_EX(i_type_branch_target_EX),   // last because branch ends at EX
-            rs_EX(rs_EX),
-            rt_EX(rt_EX),
-            rd_EX(rd_EX),
-            RF_data1_EX(RF_data1_EX),
-            RF_data2_EX(RF_data2_EX),
-            imm_signed_EX(imm_signed_EX),
-            write_reg_addr_EX(write_reg_addr_EX)
+            .i_type_branch_target_EX(i_type_branch_target_EX),   // last because branch ends at EX
+            .rs_EX(rs_EX),
+            .rt_EX(rt_EX),
+            .rd_EX(rd_EX),
+            .RF_data1_EX(RF_data1_EX),
+            .RF_data2_EX(RF_data2_EX),
+            .imm_signed_EX(imm_signed_EX),
+            .write_reg_addr_EX(write_reg_addr_EX)
 
         );
 
         EX_MEM_register EX_to_MEM(
 
-            clk(clk),
-            reset_n(reset_n),
-            flush(flush_EXMEM),
-            stall(stall_EXMEM),
+            .clk(clk),
+            .reset_n(reset_n),
+            .flush(flush_EXMEM),
+            .stall(stall_EXMEM),
 
             // ----------------------------- control signal inputs and outputs
             // ports
             // MEM
-            d_readM_EX(d_readM_EX),
-            d_writeM_EX(d_writeM_EX),
+            .d_readM_EX(d_readM_EX),
+            .d_writeM_EX(d_writeM_EX),
 
             // WB
-            output_active_EX(output_active_EX),
-            is_halted_EX(is_halted_EX), 
-            RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX(RegWrite_EX),
-            MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_EX(output_active_EX),
+            .is_halted_EX(is_halted_EX), 
+            .RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_EX(RegWrite_EX),
+            .MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ports
             // MEM
-            d_readM_MEM(d_readM_MEM),
-            d_writeM_MEM(d_writeM_MEM),
+            .d_readM_MEM(d_readM_MEM),
+            .d_writeM_MEM(d_writeM_MEM),
 
             // WB
-            output_active_MEM(output_active_MEM),
-            is_halted_MEM(is_halted_MEM), 
-            RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM(RegWrite_MEM),
-            MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_MEM(output_active_MEM),
+            .is_halted_MEM(is_halted_MEM), 
+            .RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_MEM(RegWrite_MEM),
+            .MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
-            pc_EX(pc_EX),
-            instruction_EX(instruction_EX),
+            .pc_EX(pc_EX),
+            .instruction_EX(instruction_EX),
 
-            pc_MEM(pc_MEM),
-            instruction_MEM(instruction_MEM),
+            .pc_MEM(pc_MEM),
+            .instruction_MEM(instruction_MEM),
 
-            rs_EX(rs_EX),
-            rt_EX(rt_EX),
-            RF_data2_EX(RF_data2_EX),
-            imm_signed_EX(imm_signed_EX),
-            write_reg_addr_EX(write_reg_addr_EX),
+            .rs_EX(rs_EX),
+            .rt_EX(rt_EX),
+            .RF_data2_EX(RF_data2_EX),
+            .imm_signed_EX(imm_signed_EX),
+            .write_reg_addr_EX(write_reg_addr_EX),
 
-            rs_MEM(rs_MEM),
-            rt_MEM(rt_MEM),
-            RF_data2_MEM(RF_data2_MEM),      // for SWD`        
-            imm_signed_MEM(imm_signed_MEM),
-            write_reg_addr_MEM
+            .rs_MEM(rs_MEM),
+            .rt_MEM(rt_MEM),
+            .RF_data2_MEM(RF_data2_MEM),      // for SWD`        
+            .imm_signed_MEM(imm_signed_MEM),
+            .write_reg_addr_MEM
 
-            ALU_result_EX(ALU_result_EX),
-            ALU_out_MEM(ALU_out_MEM)
+            .ALU_result_EX(ALU_result_EX),
+            .ALU_out_MEM(ALU_out_MEM)
         );
 
         MEM_WB_register MEM_to_WB(
 
-            clk(clk),
-            reset_n(reset_n),
-            flush(flush_MEMWB),
-            stall(stall_MEMWB),
+            .clk(clk),
+            .reset_n(reset_n),
+            .flush(flush_MEMWB),
+            .stall(stall_MEMWB),
 
             // ----------------------------- control signal inputs and outputs
             // ports
             // WB
-            output_active_MEM(output_active_MEM),
-            is_halted_MEM(is_halted_MEM), 
-            RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM(RegWrite_MEM),
-            MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_MEM(output_active_MEM),
+            .is_halted_MEM(is_halted_MEM), 
+            .RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_MEM(RegWrite_MEM),
+            .MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ports
             // WB
-            output_active_WB(output_active_WB),
-            is_halted_WB(is_halted), 
-            RegDst_WB(RegDst_WB), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_WB(RegWrite_WB),
-            MemtoReg_WB(MemtoReg_WB), // write 0: ALU, 1: MDR, 2: PC + 1
+            .output_active_WB(output_active_WB),
+            .is_halted_WB(is_halted), 
+            .RegDst_WB(RegDst_WB), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            .RegWrite_WB(RegWrite_WB),
+            .MemtoReg_WB(MemtoReg_WB), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
-            pc_MEM(pc_MEM),
-            instruction_MEM(instruction_MEM),
+            .pc_MEM(pc_MEM),
+            .instruction_MEM(instruction_MEM),
 
-            pc_WB(pc_WB),
-            instruction_WB(instruction_WB),
+            .pc_WB(pc_WB),
+            .instruction_WB(instruction_WB),
 
-            rs_MEM(rs_MEM),
-            rt_MEM(rt_MEM),
-            imm_signed_MEM(imm_signed_MEM),
-            write_reg_addr_MEM(write_reg_addr_MEM),
+            .rs_MEM(rs_MEM),
+            .rt_MEM(rt_MEM),
+            .imm_signed_MEM(imm_signed_MEM),
+            .write_reg_addr_MEM(write_reg_addr_MEM),
 
-            rs_WB(rs_WB),
-            rt_WB(rt_WB),
-            imm_signed_WB(imm_signed_WB),
-            write_reg_addr_WB
+            .rs_WB(rs_WB),
+            .rt_WB(rt_WB),
+            .imm_signed_WB(imm_signed_WB),
+            .write_reg_addr_WB
 
-            ALU_out_MEM(ALU_out_MEM),
-            ALU_out_WB(ALU_out_WB),
+            .ALU_out_MEM(ALU_out_MEM),
+            .ALU_out_WB(ALU_out_WB),
 
-            MDR_MEM(d_data),
-            MDR_WB(MDR_WB)
+            .MDR_MEM(d_data),
+            .MDR_WB(MDR_WB)
         );
 
 
