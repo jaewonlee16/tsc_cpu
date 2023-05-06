@@ -107,10 +107,10 @@ module datapath
             branch_target_for_btb_update(branch_target), // branch target of jump and i type branch.
 
             // ID or EX
-            update_bht(), // update BHT when know prediction was correct or not
-            pc_real(),        // The actual pc that is calculated (not predicted)
+            update_bht(update_bht), // update BHT when know prediction was correct or not
+            pc_for_bht_update(pc_for_bht_update),        // The actual pc that is calculated (not predicted)
                             // pc_ex(i type branch) or pc_id(jump)
-            branch_correct_or_notCorrect(), // if the predicted pc is same as the actual pc
+            branch_correct_or_notCorrect(branch_correct_or_notCorrect), // if the predicted pc is same as the actual pc
 
             // IF
             tag_match(tag_match_IF), // tag matched PC
@@ -131,12 +131,12 @@ module datapath
         
         ALU ALU_UUT(
             .A(RF_data1_EX),
-            .B(),
+            .B(ALU_in_B),
             .Cin(0),
             .OP(ALUOperation_EX),
-            .C(),
-            .Cout(),
-            .Compare()
+            .C(ALU_result_EX),
+            .Cout(ALU_overflow),
+            .Compare(ALU_Compare)
         );
 
         // pipeline_register.v
@@ -183,29 +183,29 @@ module datapath
             
             // output ports
             // EX
-            ALUSrcB_EX(),
-            ALUOperation_EX(),
-            isItype_Branch_EX(),
+            ALUSrcB_EX(ALUSrcB_EX),
+            ALUOperation_EX(ALUOperation_EX),
+            isItype_Branch_EX(isItype_Branch_EX),
 
             // MEM
-            d_readM_EX(),
-            d_writeM_EX(),
+            d_readM_EX(d_readM_EX),
+            d_writeM_EX(d_writeM_EX),
 
             // WB
-            output_active_EX(),
-            is_halted_EX(), 
-            RegDst_EX(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX(),
-            MemtoReg_EX(), // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_EX(output_active_EX),
+            is_halted_EX(is_halted_EX), 
+            RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_EX(RegWrite_EX),
+            MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
 
             // ----------------------------------- Data latch
             pc_ID(pc_ID),
             branch_predicted_pc_ID(branch_predicted_pc_ID),
             instruction_ID(instruction_ID),
 
-            pc_EX(),
-            branch_predicted_pc_EX(),    // last because branch ends at EX
-            instruction_EX(),
+            pc_EX(pc_EX),
+            branch_predicted_pc_EX(branch_predicted_pc_EX),    // last because branch ends at EX
+            instruction_EX(instruction_EX),
 
             i_type_branch_target_ID(i_type_branch_target_ID),
             rs_ID(rs_ID),
@@ -217,36 +217,36 @@ module datapath
             write_reg_addr_ID(write_reg_addr_ID),
 
             
-            i_type_branch_target_EX(),   // last because branch ends at EX
-            rs_EX(),
-            rt_EX(),
-            rd_EX(),
-            RF_data1_EX(),
-            RF_data2_EX(),
-            imm_signed_EX(),
-            write_reg_addr_EX()
+            i_type_branch_target_EX(i_type_branch_target_EX),   // last because branch ends at EX
+            rs_EX(rs_EX),
+            rt_EX(rt_EX),
+            rd_EX(rd_EX),
+            RF_data1_EX(RF_data1_EX),
+            RF_data2_EX(RF_data2_EX),
+            imm_signed_EX(imm_signed_EX),
+            write_reg_addr_EX(write_reg_addr_EX)
 
         );
 
         EX_MEM_register EX_to_MEM(
 
-            clk(),
-            reset_n(),
-            flush(),
-            stall(),
+            clk(clk),
+            reset_n(reset_n),
+            flush(flush_EXMEM),
+            stall(stall_EXMEM),
 
             // ----------------------------- control signal inputs and outputs
             // ports
             // MEM
-            d_readM_EX(),
-            d_writeM_EX(),
+            d_readM_EX(d_readM_EX),
+            d_writeM_EX(d_writeM_EX),
 
             // WB
-            output_active_EX(),
-            is_halted_EX(), 
-            RegDst_EX(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_EX(),
-            MemtoReg_EX(), // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_EX(output_active_EX),
+            is_halted_EX(is_halted_EX), 
+            RegDst_EX(RegDst_EX), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_EX(RegWrite_EX),
+            MemtoReg_EX(MemtoReg_EX), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ports
             // MEM
@@ -261,17 +261,17 @@ module datapath
             MemtoReg_MEM(), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
-            pc_EX(),
-            instruction_EX(),
+            pc_EX(pc_EX),
+            instruction_EX(instruction_EX),
 
             pc_MEM(),
             instruction_MEM(),
 
-            rs_EX(),
-            rt_EX(),
-            RF_data2_EX(),
-            imm_signed_EX(),
-            write_reg_addr_EX(),
+            rs_EX(rs_EX),
+            rt_EX(rt_EX),
+            RF_data2_EX(RF_data2_EX),
+            imm_signed_EX(imm_signed_EX),
+            write_reg_addr_EX(write_reg_addr_EX),
 
             rs_MEM(),
             rt_MEM(),
@@ -279,7 +279,7 @@ module datapath
             imm_signed_MEM(),
             write_reg_addr_MEM
 
-            ALU_result_EX(),
+            ALU_result_EX(ALU_result_EX),
             ALU_out_MEM()
         );
 
@@ -417,7 +417,7 @@ module datapath
         wire output_active_EX;
         wire is_halted_EX;
         wire [1 : 0] RegDst_EX;
-        wire Reg_write_EX;
+        wire RegWrite_EX;
         wire [1 : 0] MemtoReg_EX;
 
         // data signal wires
@@ -430,14 +430,41 @@ module datapath
         wire [`WORD_SIZE - 1 : 0] RF_data1_EX, RF_data2_EX;
         wire [`WORD_SIZE - 1 : 0] imm_signed_EX;
         wire [1 : 0] write_reg_addr_EX;
+        
+        wire [`WORD_SIZE - 1 : 0] ALU_result_EX;
 
 
-        // ------------------ ALU.v wires -----------
+        // ----------- ALU.v wires -----------
         wire [`WORD_SIZE - 1 : 0] ALU_in_B
+        assign ALU_in_B = ALUSrcB_EX == `ALUSRCB_REG ? RF_data2_EX :
+                          ALUSrcB_EX == `ALUSRCB_IMM ? imm_signed_EX:
+                          0;
+        wire ALU_overflow;
+        wire [1 : 0] ALU_Compare;
 
         // ------- Branch Predictor wires ------ //
-
+        wire [3 : 0] opcode_EX;
+        wire isBranchTaken;
         wire i_branch_miss;
+        wire [`WORD_SIZE - 1 : 0] calculated_pc_EX;
+        wire update_bht;
+        wire branch_correct_or_notCorrect;
+        wire [`WORD_SIZE - 1 : 0] pc_for_bht_update;
+
+        assign opcode_EX = instruction_EX[15 : 12];
+        // decide if the branch instruction is taken or not taken
+        assign isBranchTaken = (opcode_EX == `OPCODE_BNE && (ALU_Compare == `ALU_BIG || ALU_Compare == `ALU_SMALL) // not equal
+                             || opcode_EX == `OPCODE_BEQ && ALU_Compare == `ALU_SAME  // equal
+                             || opcode_EX == `OPCODE_BGZ && ALU_Compare == `ALU_BIG  // greater than
+                             || opcode_EX == `OPCODE_BLZ && ALU_Compare == `ALU_SMALL) ? 1 : 0;  // less than
+        assign calculated_pc_EX = (isItype_Branch_EX && isBranchTaken) ? i_type_branch_target_EX : pc_EX + 1;
+        assign update_bht = isItype_Branch_EX || isJump;
+        assign branch_correct_or_notCorrect = branch_predicted_pc_EX == calculated_pc_EX;
+        assign i_branch_miss = ~branch_correct_or_notCorrect;
+
+        // ID + EX
+        assign pc_for_bht_update = isItype_Branch_EX ? pc_EX:
+                                   isJump ? pc_ID: 0;
 
         // IF + ID + EX
         // pc update logic
@@ -448,7 +475,8 @@ module datapath
                     pc <= 0;
                     num_branch_miss <= 0;
                 end
-                else if (i_branch_miss) begin
+                // i_branch first becaus it is instruction from EX stage
+                else if (i_branch_miss) begin 
                     pc <= calculated_pc_EX;
                     num_branch_miss <= num_branch_miss + 1;
                 end
