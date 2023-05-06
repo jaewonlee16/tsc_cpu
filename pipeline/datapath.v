@@ -124,9 +124,11 @@ module datapath
             .addr1(rs_ID),
             .addr2(rt_ID),
             .addr3(),
+            .wwd_addr(wwd_addr),
             .data1(RF_data1_ID),
             .data2(RF_data2_ID),
-            .data3()
+            .data3(),
+            .wwd_data(output_port)
         );
         
         ALU ALU_UUT(
@@ -302,7 +304,7 @@ module datapath
             // ports
             // WB
             output_active_WB(),
-            is_halted_WB(), 
+            is_halted_WB(is_halted), 
             RegDst_WB(), // write to 0: rt, 1: rd, 2: $2 (JAL)
             RegWrite_WB(),
             MemtoReg_WB(), // write 0: ALU, 1: MDR, 2: PC + 1
@@ -528,3 +530,23 @@ module datapath
         assign d_writeM = d_writeM_MEM;
         assign d_address = ALU_out_MEM;
         assign d_data = d_writeM ? RF_data2_MEM : 16'bz;
+
+
+        // ------------------------- WB ----------------------------------//
+        // ---------------------------------------------------------------//
+        // pipeline wires
+        wire output_active_WB;
+        wire [1 : 0] RegDst_WB;
+        wire RegWrite_WB;
+        wire [1 : 0] MemtoReg_WB;
+
+        wire pc_WB;
+        wire instruction_WB;
+
+        wire [1 : 0] rs_WB, rt_WB;
+        wire imm_signed_WB;
+
+
+
+        wire [1 : 0] wwd_addr;
+        assign wwd_addr = output_active_WB ? rs_WB : 2'bz;
