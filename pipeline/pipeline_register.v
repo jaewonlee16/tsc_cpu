@@ -6,13 +6,13 @@ module IF_ID_register(
     input reset_n,
     input flush,
     input stall,
-    input pc_IF,
-    input branch_predicted_pc_IF,
-    input instruction_IF,
+    input [`WORD_SIZE - 1 : 0]pc_IF,
+    input [`WORD_SIZE - 1 : 0]branch_predicted_pc_IF,
+    input [`WORD_SIZE - 1 : 0]instruction_IF,
     input tag_match_IF,
-    output reg pc_ID,
-    output reg branch_predicted_pc_ID,
-    output reg instruction_ID,
+    output reg [`WORD_SIZE - 1 : 0]pc_ID,
+    output reg [`WORD_SIZE - 1 : 0]branch_predicted_pc_ID,
+    output reg [`WORD_SIZE - 1 : 0]instruction_ID,
     output reg tag_match_ID
 );
 
@@ -76,13 +76,13 @@ module ID_EX_register(
     output reg [1 : 0] MemtoReg_EX, // write 0: ALU, 1: MDR, 2: PC + 1
 
     // ----------------------------------- Data latch
-    input pc_ID,
-    input branch_predicted_pc_ID,
-    input instruction_ID,
+    input [`WORD_SIZE - 1 : 0]pc_ID,
+    input [`WORD_SIZE - 1 : 0]branch_predicted_pc_ID,
+    input [`WORD_SIZE - 1 : 0]instruction_ID,
 
-    output reg pc_EX,
-    output reg branch_predicted_pc_EX,    // last because branch ends at EX
-    output reg instruction_EX,
+    output reg [`WORD_SIZE - 1 : 0]pc_EX,
+    output reg [`WORD_SIZE - 1 : 0]branch_predicted_pc_EX,    // last because branch ends at EX
+    output reg [`WORD_SIZE - 1 : 0]instruction_EX,
 
     input [`WORD_SIZE - 1 : 0] i_type_branch_target_ID,
     input [1 : 0] rs_ID,
@@ -205,11 +205,11 @@ module ID_EX_register(
         output reg [1 : 0] MemtoReg_MEM, // write 0: ALU, 1: MDR, 2: PC + 1
         
         // ----------------------------------- Data latch
-        input pc_EX,
-        input instruction_EX,
+        input [`WORD_SIZE - 1 : 0]pc_EX,
+        input [`WORD_SIZE - 1 : 0]instruction_EX,
 
-        output reg pc_MEM,
-        output reg instruction_MEM,
+        output reg [`WORD_SIZE - 1 : 0]pc_MEM,
+        output reg [`WORD_SIZE - 1 : 0]instruction_MEM,
 
         input [1 : 0] rs_EX,
         input [1 : 0] rt_EX,
@@ -303,11 +303,11 @@ module ID_EX_register(
         output reg [1 : 0] MemtoReg_WB, // write 0: ALU, 1: MDR, 2: PC + 1
         
         // ----------------------------------- Data latch
-        input pc_MEM,
-        input instruction_MEM,
+        input [`WORD_SIZE - 1 : 0]pc_MEM,
+        input [`WORD_SIZE - 1 : 0]instruction_MEM,
 
-        output reg pc_WB,
-        output reg instruction_WB,
+        output reg [`WORD_SIZE - 1 : 0]pc_WB,
+        output reg [`WORD_SIZE - 1 : 0]instruction_WB,
 
         input [1 : 0] rs_MEM,
         input [1 : 0] rt_MEM,
