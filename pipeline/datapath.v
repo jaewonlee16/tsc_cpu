@@ -250,22 +250,22 @@ module datapath
             
             // ports
             // MEM
-            d_readM_MEM(),
-            d_writeM_MEM(),
+            d_readM_MEM(d_readM_MEM),
+            d_writeM_MEM(d_writeM_MEM),
 
             // WB
-            output_active_MEM(),
-            is_halted_MEM(), 
-            RegDst_MEM(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM(),
-            MemtoReg_MEM(), // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_MEM(output_active_MEM),
+            is_halted_MEM(is_halted_MEM), 
+            RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM(RegWrite_MEM),
+            MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
             pc_EX(pc_EX),
             instruction_EX(instruction_EX),
 
-            pc_MEM(),
-            instruction_MEM(),
+            pc_MEM(pc_MEM),
+            instruction_MEM(instruction_MEM),
 
             rs_EX(rs_EX),
             rt_EX(rt_EX),
@@ -273,31 +273,31 @@ module datapath
             imm_signed_EX(imm_signed_EX),
             write_reg_addr_EX(write_reg_addr_EX),
 
-            rs_MEM(),
-            rt_MEM(),
-            RF_data2_MEM(),      // for SWD`        
-            imm_signed_MEM(),
+            rs_MEM(rs_MEM),
+            rt_MEM(rt_MEM),
+            RF_data2_MEM(RF_data2_MEM),      // for SWD`        
+            imm_signed_MEM(imm_signed_MEM),
             write_reg_addr_MEM
 
             ALU_result_EX(ALU_result_EX),
-            ALU_out_MEM()
+            ALU_out_MEM(ALU_out_MEM)
         );
 
         MEM_WB_register MEM_to_WB(
 
-            clk(),
-            reset_n(),
-            flush(),
-            stall(),
+            clk(clk),
+            reset_n(reset_n),
+            flush(flush_MEMWB),
+            stall(stall_MEMWB),
 
             // ----------------------------- control signal inputs and outputs
             // ports
             // WB
-            output_active_MEM(),
-            is_halted_MEM(), 
-            RegDst_MEM(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_MEM(),
-            MemtoReg_MEM(), // write 0: ALU, 1: MDR, 2: PC + 1
+            output_active_MEM(output_active_MEM),
+            is_halted_MEM(is_halted_MEM), 
+            RegDst_MEM(RegDst_MEM), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_MEM(RegWrite_MEM),
+            MemtoReg_MEM(MemtoReg_MEM), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ports
             // WB
@@ -308,26 +308,26 @@ module datapath
             MemtoReg_WB(), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
-            pc_MEM(),
-            instruction_MEM(),
+            pc_MEM(pc_MEM),
+            instruction_MEM(instruction_MEM),
 
             pc_WB(),
             instruction_WB(),
 
-            rs_MEM(),
-            rt_MEM(),
-            imm_signed_MEM(),
-            write_reg_addr_MEM(),
+            rs_MEM(rs_MEM),
+            rt_MEM(rt_MEM),
+            imm_signed_MEM(imm_signed_MEM),
+            write_reg_addr_MEM(write_reg_addr_MEM),
 
             rs_WB(),
             rt_WB(),
             imm_signed_WB(),
             write_reg_addr_WB
 
-            ALU_out_MEM(),
+            ALU_out_MEM(ALU_out_MEM),
             ALU_out_WB(),
 
-            MDR_MEM(),
+            MDR_MEM(d_data),
             MDR_WB()
         );
 
@@ -338,6 +338,12 @@ module datapath
         // pipeline register control wires
         wire flush_IFID, flush_IDEX, flush_EXMEM, flush_MEMWB;
         wire stall_IFID, stall_IDEX, stall_EXMEM, stall_MEMWB;
+
+        assign flush_EXMEM = 0;
+        assign flush_MEMWB = 0;
+        assign stall_IDEX = 0;
+        assign stall_EXMEM = 0;
+        assign stall_MEMWB = 0;
 
         //  ----------------------- IF STAGE --------------------------
         // -------------------------------------------------------------
@@ -498,3 +504,27 @@ module datapath
         // --------------------------- MEM -------------------------------//
         // ---------------------------------------------------------------//
         // pipeline wires
+        wire d_readM_MEM;
+        wire d_writeM_MEM;
+        
+        wire output_active_MEM;
+        wire is_halted_MEM;
+        wire [1 : 0] RegDst_MEM;
+        wire RegWrite_MEM;
+        wire [1 : 0] MemtoReg_MEM;
+
+        wire [`WORD_SIZE - 1 : 0] pc_MEM;
+        wire [`WORD_SIZE - 1 : 0] instruction_MEM;
+
+        wire [1 : 0] rs_MEM;
+        wire [1 : 0] rt_MEM;
+        wire [`WORD_SIZE - 1 : 0] RF_data2_MEM;
+        wire [`WORD_SIZE - 1 : 0] imm_signed_MEM;
+        wire [1 : 0] write_reg_addr_MEM;
+        
+        wire [`WORD_SIZE - 1 : 0] ALU_out_MEM;
+
+        assign d_readM = d_readM_MEM;
+        assign d_writeM = d_writeM_MEM;
+        assign d_address = ALU_out_MEM;
+        assign d_data = d_writeM ? RF_data2_MEM : 16'bz;
