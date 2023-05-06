@@ -41,9 +41,9 @@ module datapath
         output                       d_writeM,
         inout [`WORD_SIZE-1:0]        i_data,
         inout [`WORD_SIZE-1:0]        d_data,
-        output [`WORD_SIZE-1:0]   output_port,
+        output reg [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
-        output reg [`WORD_SIZE-1:0]  num_inst
+        output [`WORD_SIZE-1:0]  num_inst
         
     );
         // reg declaration
@@ -51,6 +51,7 @@ module datapath
         reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
         reg [`WORD_SIZE - 1 : 0] pc;
         reg reset_after;
+        reg [`WORD_SIZE-1:0] real_num_inst;
 
 
         // ------------------------------------ modules --------------------------------
@@ -126,7 +127,7 @@ module datapath
             .data1(RF_data1_ID),
             .data2(RF_data2_ID),
             .data3(RF_write_data),
-            .wwd_data(output_port)
+            .wwd_data(wwd_data)
         );
         
         ALU ALU_UUT(
@@ -485,7 +486,7 @@ module datapath
         assign update_bht = isItype_Branch_EX || isJump;
         assign branch_correct_or_notCorrect = isItype_Branch_EX ? branch_predicted_pc_EX == calculated_pc_EX:
                                               isJump ? ~jump_miss : 1;
-        assign i_branch_miss = isItype_Branch && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
+        assign i_branch_miss = isItype_Branch_EX && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
 
         // ID + EX
         assign pc_for_bht_update = isItype_Branch_EX ? pc_EX:
@@ -579,19 +580,28 @@ module datapath
         wire [`WORD_SIZE - 1 : 0] RF_write_data;
         assign RF_write_data = MemtoReg_WB == `REGWRITESRC_ALU ? ALU_out_WB:
                                MemtoReg_WB == `REGWRITESRC_MEM ? MDR_WB:
-                               /* `REGWRITESRC_PC */ pc_EX + 1;
+                               /* `REGWRITESRC_PC */ pc_WB + 1;
         // WWD
         wire [1 : 0] wwd_addr;
+        wire [`WORD_SIZE - 1 : 0] wwd_data;
         assign wwd_addr = output_active_WB ? rs_WB : 2'bz;
 
         // num_inst
+        wire [3 : 0] opcode_MEM;
         wire [3 : 0] opcode_WB;
+        assign opcode_MEM = instruction_MEM[15 : 12];
         assign opcode_WB = instruction_WB[15 : 12];
 
         always @ (posedge clk) begin
-            if (~reset_n) num_inst <= 1;
-            else if (opcode_WB == `OPCODE_NOP) num_inst <= num_inst;
-            else num_inst <= num_inst + 1;
+            if (~reset_n) real_num_inst <= 0;
+            else if (opcode_WB == `OPCODE_NOP) real_num_inst <= real_num_inst;
+            else real_num_inst <= real_num_inst + 1;
+        end
+        assign num_inst = /*opcode_WB == `OPCODE_NOP ? 16'bz :*/real_num_inst;
+        
+        always @ (posedge clk) begin
+            if (output_active_WB) output_port <= wwd_data;
+            else output_port <= output_port;
         end
 
 endmodule
