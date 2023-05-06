@@ -88,9 +88,9 @@ module ID_EX_register(
     input [1 : 0] rs_ID,
     input [1 : 0] rt_ID,
     input [1 : 0] rd_ID,
-    input [`WORD_SIZE - 1] RF_data1_ID,
-    input [`WORD_SIZE - 1] RF_data2_ID,
-    input [`WORD_SIZE - 1] imm_signed_ID,
+    input [`WORD_SIZE - 1 : 0] RF_data1_ID,
+    input [`WORD_SIZE - 1 : 0] RF_data2_ID,
+    input [`WORD_SIZE - 1 : 0] imm_signed_ID,
     input [1 : 0] write_reg_addr_ID,
 
     
@@ -98,9 +98,9 @@ module ID_EX_register(
     output reg [1 : 0] rs_EX,
     output reg [1 : 0] rt_EX,
     output reg [1 : 0] rd_EX,
-    output reg [`WORD_SIZE - 1] RF_data1_EX,
-    output reg [`WORD_SIZE - 1] RF_data2_EX,
-    output reg [`WORD_SIZE - 1] imm_signed_EX,
+    output reg [`WORD_SIZE - 1 : 0] RF_data1_EX,
+    output reg [`WORD_SIZE - 1 : 0] RF_data2_EX,
+    output reg [`WORD_SIZE - 1 : 0] imm_signed_EX,
     output [1 : 0] write_reg_addr_EX
 );
 
@@ -213,18 +213,18 @@ module ID_EX_register(
 
         input [1 : 0] rs_EX,
         input [1 : 0] rt_EX,
-        input [`WORD_SIZE - 1] RF_data2_EX,
-        input [`WORD_SIZE - 1] imm_signed_EX,
+        input [`WORD_SIZE - 1: 0] RF_data2_EX,
+        input [`WORD_SIZE - 1 : 0] imm_signed_EX,
         input [1 : 0] write_reg_addr_EX,
 
         output reg [1 : 0] rs_MEM,
         output reg [1 : 0] rt_MEM,
-        output reg [`WORD_SIZE - 1] RF_data2_MEM,      // for SWD`        
-        output reg [`WORD_SIZE - 1] imm_signed_MEM,
+        output reg [`WORD_SIZE - 1: 0] RF_data2_MEM,      // for SWD`        
+        output reg [`WORD_SIZE - 1 : 0] imm_signed_MEM,
         output [1 : 0] write_reg_addr_MEM
 
-        input [`WORD_SIZE - 1] ALU_result_EX,
-        output [`WORD_SIZE - 1] ALU_out_MEM
+        input [`WORD_SIZE - 1 : 0] ALU_result_EX,
+        output [`WORD_SIZE - 1 : 0] ALU_out_MEM
     );
 
     always @ (posedge clk) begin
@@ -311,19 +311,19 @@ module ID_EX_register(
 
         input [1 : 0] rs_MEM,
         input [1 : 0] rt_MEM,
-        input [`WORD_SIZE - 1] imm_signed_MEM,
+        input [`WORD_SIZE - 1 : 0] imm_signed_MEM,
         input [1 : 0] write_reg_addr_MEM,
 
         output reg [1 : 0] rs_WB,
         output reg [1 : 0] rt_WB,
-        output reg [`WORD_SIZE - 1] imm_signed_WB,
+        output reg [`WORD_SIZE - 1 : 0] imm_signed_WB,
         output [1 : 0] write_reg_addr_WB
 
-        input [`WORD_SIZE - 1] ALU_out_MEM,
-        output [`WORD_SIZE - 1] ALU_out_WB,
+        input [`WORD_SIZE - 1 : 0] ALU_out_MEM,
+        output [`WORD_SIZE - 1 : 0] ALU_out_WB,
 
-        input [`WORD_SIZE - 1] MDR_MEM,
-        output [`WORD_SIZE - 1] MDR_WB
+        input [`WORD_SIZE - 1 : 0] MDR_MEM,
+        output [`WORD_SIZE - 1 : 0] MDR_WB
     );
 
     always @ (posedge clk) begin
