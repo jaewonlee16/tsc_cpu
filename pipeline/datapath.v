@@ -116,7 +116,7 @@ module datapath
         );   
 
         RF rf(
-            .write(Reg_write_WB),
+            .write(RegWrite_WB),
             .clk(clk),
             .reset_n(reset_n),
             .addr1(rs_ID),
@@ -125,7 +125,7 @@ module datapath
             .wwd_addr(wwd_addr),
             .data1(RF_data1_ID),
             .data2(RF_data2_ID),
-            .data3(),
+            .data3(RF_write_data),
             .wwd_data(output_port)
         );
         

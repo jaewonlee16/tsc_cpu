@@ -148,8 +148,12 @@ module control_unit(
     //                  write signals               //
     // regWrite
     assign RegWrite = ( (opcode == `typeR && func_code == `FUNC_JRL) // stage ID JRL
-                      || opcode == `OPCODE_JAL ) ? 1'b1 : 1'b0 ; // stage ID JAL
-     
+                      || opcode == `OPCODE_JAL ) 
+                      || isRtype_Arithmetic
+                      || isItype_Arithmetic
+                      || opcode == `OPCODE_LWD  ? 1'b1 : 1'b0 ; // stage ID JAL
+    
+    
 
 
 endmodule
