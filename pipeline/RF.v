@@ -28,7 +28,7 @@ module RF(
     end
     
     // sequential logic
-    always @ (posedge clk)
+    always @ (negedge clk)
     begin
         // reset all values of regiser to 0
         if (!reset_n) for (index = 0; index < 4; index = index + 1) register[index] <= 0;

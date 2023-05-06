@@ -90,19 +90,17 @@ module hazard_control_unit
 
     // ---------------   data hazards  ---------------- //
     wire reg_write_stall_check;
-    assign reg_write_stall_check = !DATA_FORWARDING &&
-                                 ((use_rs && Reg_write_EX  && rs_ID == dest_EX) ||
-                                  (use_rs && Reg_write_MEM && rs_ID == dest_MEM) ||
-                                  (use_rs && Reg_write_WB  && rs_ID == dest_WB) ||
-                                  (use_rt && Reg_write_EX  && rt_ID == dest_EX) ||
-                                  (use_rt && Reg_write_MEM && rt_ID == dest_MEM) ||
-                                  (use_rt && Reg_write_WB  && rt_ID == dest_WB)) ? 1 : 0;
+    assign reg_write_stall_check = !DATA_FORWARDING
+                               &&((use_rs && Reg_write_EX  && rs_ID == dest_EX) 
+                               || (use_rs && Reg_write_MEM && rs_ID == dest_MEM) 
+                               || (use_rt && Reg_write_EX  && rt_ID == dest_EX) 
+                               || (use_rt && Reg_write_MEM && rt_ID == dest_MEM)) ? 1 : 0;
+                          
 
    wire load_stall_check;
    assign load_stall_check = 
            ((use_rs || use_rt) && d_MEM_read_EX && (rs_ID == rt_EX || rt_ID == rt_EX)) ||
            (!DATA_FORWARDING && (use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM))  ? 1 : 0;
-           // || ((use_rs || use_rt) && d_MEM_read_WB && (rs_ID == rt_WB || rt_ID == rt_WB)) 
   
 
     always @ (*) begin
