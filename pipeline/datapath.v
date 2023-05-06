@@ -130,10 +130,10 @@ module datapath
         );
         
         ALU ALU_UUT(
-            .A(),
+            .A(RF_data1_EX),
             .B(),
             .Cin(0),
-            .OP(),
+            .OP(ALUOperation_EX),
             .C(),
             .Cout(),
             .Compare()
@@ -339,7 +339,7 @@ module datapath
         wire flush_IFID, flush_IDEX, flush_EXMEM, flush_MEMWB;
         wire stall_IFID, stall_IDEX, stall_EXMEM, stall_MEMWB;
 
-        //  ----------------------- IF STAGE
+        //  ----------------------- IF STAGE --------------------------
         // pipeline register wires
         wire [`WORD_SIZE - 1 : 0] pc_IF;
         wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_IF;
@@ -355,7 +355,7 @@ module datapath
         assign i_address = pc;
         assign instruction_IF = i_data;
 
-        // ------------------------- ID STAGE
+        // ------------------------- ID STAGE ----------------------------
         // pipeline register wires
         wire [`WORD_SIZE - 1 : 0] pc_ID;
         wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_ID;
@@ -404,12 +404,44 @@ module datapath
         assign update_tag = ((isJump || isItype_Branch_ID) && !tag_match_ID) ? 1 : 0;
 
 
-        // ------------------------- EX STAGE
+        // ------------------------- EX STAGE ------------------------------
+        // -- pipeline register wires -- //
+        // control signal wires
+        wire [1 : 0] ALUSrcB_EX;
+        wire [3 : 0] ALUOperation_EX;
+        wire isItype_Branch_EX;
+
+        wire d_readM_EX;
+        wire d_writeM_EX;
+
+        wire output_active_EX;
+        wire is_halted_EX;
+        wire [1 : 0] RegDst_EX;
+        wire Reg_write_EX;
+        wire [1 : 0] MemtoReg_EX;
+
+        // data signal wires
+        wire [`WORD_SIZE - 1 : 0] pc_EX;
+        wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_EX;
+        wire [`WORD_SIZE - 1 : 0] instruction_EX;
+
+        wire [`WORD_SIZE - 1 : 0] i_type_branch_target_EX;
+        wire [1 : 0] rs_EX, rt_EX, rd_EX;
+        wire [`WORD_SIZE - 1 : 0] RF_data1_EX, RF_data2_EX;
+        wire [`WORD_SIZE - 1 : 0] imm_signed_EX;
+        wire [1 : 0] write_reg_addr_EX;
+
+
+        // ------------------ ALU.v wires -----------
+        wire [`WORD_SIZE - 1 : 0] ALU_in_B
+
+        // ------- Branch Predictor wires ------ //
+
         wire i_branch_miss;
 
         // IF + ID + EX
         // pc update logic
-        // sequential logic fot pc and num_branch_miss
+        // sequential logic for pc and num_branch_miss
         always @ (posedge clk) begin
             if (pc_write) begin
                 if (reset_n) begin
