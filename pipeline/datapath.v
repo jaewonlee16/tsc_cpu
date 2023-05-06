@@ -95,18 +95,24 @@ module datapath
                             BTB_IDX_SIZE.(BTB_IDX_SIZE))
         bp (
 
-            clk(),
-            reset_n(), // clear BTB to all zero
-            update_tag(), // update tag as soon as decode (when target is known)
-            update_bht(), // update BHT when know prediction was correct or not
+            clk(clk),
+            reset_n(reset_n), // clear BTB to all zero
+
+            // IF
             pc(pc_IF), // the pc that was just fetched
+
+            // ID
+            update_tag(), // update tag as soon as decode (when target is known)
             pc_for_btb_update(), // PC collision tag 
-                             // always pc_id
+            branch_target_for_btb_update(), // branch target of jump and i type branch.
+
+            // ID or EX
+            update_bht(), // update BHT when know prediction was correct or not
             pc_real(),        // The actual pc that is calculated (not predicted)
                             // pc_ex(i type branch) or pc_id(jump)
-            branch_target_for_btb_update(), // branch target of jump and i type branch.
-                                          // update as soon as decode
             branch_correct_or_notCorrect(), // if the predicted pc is same as the actual pc
+
+            // IF
             tag_match(tag_match_IF), // tag matched PC
             branch_predicted_pc(branch_predicted_pc_IF) // predicted next PC
         );   
@@ -135,13 +141,13 @@ module datapath
 
         // pipeline_register.v
         IF_ID_register IF_to_ID(
-            clk(),
-            reset_n(),
-            flush(),
-            stall(),
-            pc_IF(),
-            branch_predicted_pc_IF(),
-            instruction_IF(),
+            clk(clk),
+            reset_n(reset_n),
+            flush(flush_IFID),
+            stall(stall_IFID),
+            pc_IF(pc_IF),
+            branch_predicted_pc_IF(branch_predicted_pc_IF),
+            instruction_IF(instruction_IF),
             tag_match_ID(),
             pc_ID(),
             branch_predicted_pc_ID(),
@@ -328,20 +334,31 @@ module datapath
 
 
         // ------------------------  Datapath  ------------------------ //
-        wire pc_write;
 
-        // IF
-        wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_IF
+        // pipeline register control wires
+        wire flush_IFID, flush_IDEX, flush_EXMEM, flush_MEMWB;
+        wire stall_IFID, stall_IDEX, stall_EXMEM, stall_MEMWB;
+
+        //  ----------------------- IF STAGE
+        // pipeline register wires
         wire [`WORD_SIZE - 1 : 0] pc_IF;
-        assign pc_IF = pc;   // pc_IF : wire    pc: reg
-        assign i_address = pc;
+        wire [`WORD_SIZE - 1 : 0] branch_predicted_pc_IF;
+        wire [`WORD_SIZE - 1 : 0] instruction_IF;
         wire tag_match_IF;
 
-        // ID
+        // hazard_control wires
+        wire pc_write;
+
+        // assign
+        assign pc_IF = pc;   // pc_IF : wire    pc: reg
+        assign i_address = pc;
+        assign instruction_IF = i_data;
+
+        // ------------------------- ID STAGE
         wire jump_miss;
         wire tag_match_ID;
 
-        // EX
+        // ------------------------- EX STAGE
         wire i_branch_miss;
 
         // IF + ID + EX
@@ -364,6 +381,6 @@ module datapath
                 else
                     pc <= branch_predicted_pc_IF;
             end
-            else
+            else // stall
                 pc <= pc;
         end
