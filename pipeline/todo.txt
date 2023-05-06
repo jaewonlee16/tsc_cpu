@@ -7,3 +7,5 @@ because ir is IFID register
 
 num_branch calculated at WB like wwd.
 need to decode instruction at WB.
+
+no register between MEM and WB beacause of negedge write RF.
