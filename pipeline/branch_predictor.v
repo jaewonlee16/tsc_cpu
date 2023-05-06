@@ -19,7 +19,7 @@ module branch_predictor
     // ID or EX
     // BHT is updated at ID or EX stage depending on the branch type
     input                      update_bht, // update BHT when know prediction was correct or not
-    input [WORD_SIZE-1:0]      pc_real,        // The actual pc that is calculated (not predicted)
+    input [WORD_SIZE-1:0]      pc_for_bht_update,     // The actual pc that is calculated (not predicted)
                                                // pc_ex(i type branch) or pc_id(jump)
     input                      branch_correct_or_notCorrect, // if the predicted pc is same as the actual pc
 
