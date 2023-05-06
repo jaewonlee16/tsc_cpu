@@ -50,7 +50,6 @@ module datapath
         reg [`WORD_SIZE-1:0]   num_branch; // total number of branches
         reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
         reg [`WORD_SIZE - 1 : 0] pc;
-        reg reset_after;
         reg [`WORD_SIZE-1:0] real_num_inst;
 
 
@@ -500,11 +499,6 @@ module datapath
                 if (~reset_n) begin
                     pc <= 0;
                     num_branch_miss <= 0;
-                    reset_after <= 0;
-                end
-                else if (reset_after) begin
-                    pc <= 0;
-                    reset_after <= 0;
                 end
                 // i_branch first becaus it is instruction from EX stage
                 else if (i_branch_miss) begin 
