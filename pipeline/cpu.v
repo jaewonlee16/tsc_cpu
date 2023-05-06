@@ -4,8 +4,7 @@
 `include "opcodes.v"
 `include "constants.v"
 
-parameter DATA_FORWARDING = 0;
-parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN
+
 
 module cpu(
         input Clk, 
@@ -29,6 +28,9 @@ module cpu(
 );
 
 	// TODO : Implement your pipelined CPU!
+	parameter DATA_FORWARDING = 0;
+    parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN;
+    
         assign i_readM = 1;
         assign i_writeM = 0;
 
@@ -104,7 +106,7 @@ module cpu(
         .d_data(d_data),
         .output_port(output_port),
         .is_halted(is_halted), 
-        .num_inst(num_inst),
+        .num_inst(num_inst)
         );
 
 

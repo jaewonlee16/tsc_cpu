@@ -12,7 +12,7 @@ module RF(
     output reg [15 : 0] data1,
     output reg [15 : 0] data2,
     input [15 : 0] data3,
-    output [15 : 0] wwd_data
+    output reg [15 : 0] wwd_data
     );
     
     reg [15 : 0] register [3 : 0];

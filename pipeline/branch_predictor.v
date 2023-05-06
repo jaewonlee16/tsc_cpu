@@ -2,34 +2,36 @@
 `include "opcodes.v"
 `include "constants.v"
 
+
 module branch_predictor
-  #(parameter BRANCH_PREDICTOR,
-    parameter BTB_IDX_SIZE)
-   (input clk,
+  #(parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN)
+   (
+    input clk,
     input reset_n, // clear BTB to all zero
     // IF
-    input [WORD_SIZE-1:0]      pc, // the pc that was just fetched
+    input [`WORD_SIZE-1:0]      pc, // the pc that was just fetched
 
     // ID
     // BTB is only updated at ID stage
     input                      update_tag, // update tag as soon as decode(when target is known)
-    input [WORD_SIZE-1:0]      pc_for_btb_update, // PC collision tag 
-    input [WORD_SIZE-1:0]      branch_target_for_btb_update, // branch target of jump and i type branch.
+    input [`WORD_SIZE-1:0]      pc_for_btb_update, // PC collision tag 
+    input [`WORD_SIZE-1:0]      branch_target_for_btb_update, // branch target of jump and i type branch.
 
     // ID or EX
     // BHT is updated at ID or EX stage depending on the branch type
     input                      update_bht, // update BHT when know prediction was correct or not
-    input [WORD_SIZE-1:0]      pc_for_bht_update,     // The actual pc that is calculated (not predicted)
+    input [`WORD_SIZE-1:0]      pc_for_bht_update,     // The actual pc that is calculated (not predicted)
                                                // pc_ex(i type branch) or pc_id(jump)
     input                      branch_correct_or_notCorrect, // if the predicted pc is same as the actual pc
 
     // IF
     output                     tag_match, // tag matched PC : output at IF
-    output [WORD_SIZE-1:0] branch_predicted_pc // predicted next PC
+    output [`WORD_SIZE-1:0] branch_predicted_pc // predicted next PC
 );
-
+    parameter BTB_IDX_SIZE = 8;
+    
    // Tag table
-   reg [WORD_SIZE-BTB_IDX_SIZE-1:0] tag_table[2**BTB_IDX_SIZE-1:0];
+   reg [`WORD_SIZE-BTB_IDX_SIZE-1:0] tag_table[2**BTB_IDX_SIZE-1:0];
    // Branch history table
    reg [1:0] bht[2**BTB_IDX_SIZE-1:0];
    // Branch target buffer
@@ -37,12 +39,12 @@ module branch_predictor
    // BTB index
    wire [BTB_IDX_SIZE-1:0] btb_idx;
    // PC tag
-   wire [WORD_SIZE-BTB_IDX_SIZE-1:0] pc_tag;
+   wire [`WORD_SIZE-BTB_IDX_SIZE-1:0] pc_tag;
    assign {pc_tag, btb_idx} = pc;
    // BTB hit
 
    wire [BTB_IDX_SIZE-1:0]           btb_idx_for_btb_update;
-   wire [WORD_SIZE-BTB_IDX_SIZE-1:0] tag_for_btb_update;
+   wire [`WORD_SIZE-BTB_IDX_SIZE-1:0] tag_for_btb_update;
    assign {tag_for_btb_update, btb_idx_for_btb_update} = pc_for_btb_update;
 
    // combinational logic for output
@@ -69,9 +71,9 @@ module branch_predictor
          // This should be done for all predictors including always taken.
          if (update_tag) begin
             tag_table[btb_idx_for_btb_update] <= tag_for_btb_update;
-            btb[btb_idx_for_btb_update] <= branch_target;
+            btb[btb_idx_for_btb_update] <= branch_target_for_btb_update;
          end
-         if (update_bht) // TODO
+         // if (update_bht) // TODO
       end
    end
 endmodule

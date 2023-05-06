@@ -20,15 +20,15 @@ module IF_ID_register(
         if (~reset_n || flush) begin
             pc_ID <= 0;
             branch_predicted_pc_ID <= 0;
-            instruction_ID <= {`OPCODE_NOP, 12{0}};
+            instruction_ID <= {`OPCODE_NOP, {12{1'b0}}};
             tag_match_ID <= 0;
         end
-        else if (~stall){
+        else if (~stall) begin
             pc_ID <= pc_IF;
             branch_predicted_pc_ID <= branch_predicted_pc_IF;
             instruction_ID <= instruction_IF;
             tag_match_ID <= tag_match_IF;
-        }
+        end
     end
     endmodule
 
@@ -61,12 +61,12 @@ module ID_EX_register(
     input [1 : 0] MemtoReg_ID, // write 0: ALU, 1: MDR, 2: PC + 1
     
     // output ports
-    output isJump_EX,
+    output reg isJump_EX,
 
     // EX
     output reg [1 : 0] ALUSrcB_EX,
     output reg [3 : 0] ALUOperation_EX,
-    output isItype_Branch_EX,
+    output reg isItype_Branch_EX,
 
     // MEM
     output reg d_readM_EX,
@@ -105,7 +105,7 @@ module ID_EX_register(
     output reg [`WORD_SIZE - 1 : 0] RF_data1_EX,
     output reg [`WORD_SIZE - 1 : 0] RF_data2_EX,
     output reg [`WORD_SIZE - 1 : 0] imm_signed_EX,
-    output [1 : 0] write_reg_addr_EX
+    output reg [1 : 0] write_reg_addr_EX
 );
 
     always @ (posedge clk) begin
@@ -131,7 +131,7 @@ module ID_EX_register(
             // ------------------  Data latches
             pc_EX <= 0;
             branch_predicted_pc_EX <= 0;
-            instruction_EX <= {`OPCODE_NOP, 12{0}};
+            instruction_EX <= {`OPCODE_NOP, {12{0}}};
             
             i_type_branch_target_EX <= 0;
             rs_EX <= 0;
@@ -170,7 +170,7 @@ module ID_EX_register(
             i_type_branch_target_EX <= i_type_branch_target_ID;
             rs_EX <= rs_ID;
             rt_EX <= rt_ID;
-            rd_EX <= rd_ID
+            rd_EX <= rd_ID;
             RF_data1_EX <= RF_data1_ID;
             RF_data2_EX <= RF_data2_ID;
             imm_signed_EX <= imm_signed_ID;
@@ -228,10 +228,10 @@ module ID_EX_register(
         output reg [1 : 0] rt_MEM,
         output reg [`WORD_SIZE - 1: 0] RF_data2_MEM,      // for SWD`        
         output reg [`WORD_SIZE - 1 : 0] imm_signed_MEM,
-        output [1 : 0] write_reg_addr_MEM
+        output reg [1 : 0] write_reg_addr_MEM,
 
         input [`WORD_SIZE - 1 : 0] ALU_result_EX,
-        output [`WORD_SIZE - 1 : 0] ALU_out_MEM
+        output reg [`WORD_SIZE - 1 : 0] ALU_out_MEM
     );
 
     always @ (posedge clk) begin
@@ -250,11 +250,11 @@ module ID_EX_register(
 
             // ------------------  Data latches
             pc_MEM <= 0;
-            instruction_MEM <= {`OPCODE_NOP, 12{0}};
+            instruction_MEM <= {`OPCODE_NOP, {12{0}}};
             
             rs_MEM <= 0;
             rt_MEM <= 0;
-            B_MEM <= 0;
+            RF_data2_MEM <= 0;
             imm_signed_MEM <= 0;
             write_reg_addr_MEM <= 0;
             ALU_out_MEM <= 0;
@@ -278,7 +278,7 @@ module ID_EX_register(
             
             rs_MEM <= rs_EX;
             rt_MEM <= rt_EX;
-            B_MEM <= RF_data2_EX;
+            RF_data2_MEM <= RF_data2_EX;
             imm_signed_MEM <= imm_signed_EX;
             write_reg_addr_MEM <= write_reg_addr_EX;
             ALU_out_MEM <= ALU_result_EX;
@@ -324,13 +324,13 @@ module ID_EX_register(
         output reg [1 : 0] rs_WB,
         output reg [1 : 0] rt_WB,
         output reg [`WORD_SIZE - 1 : 0] imm_signed_WB,
-        output [1 : 0] write_reg_addr_WB
+        output reg [1 : 0] write_reg_addr_WB,
 
         input [`WORD_SIZE - 1 : 0] ALU_out_MEM,
-        output [`WORD_SIZE - 1 : 0] ALU_out_WB,
+        output reg [`WORD_SIZE - 1 : 0] ALU_out_WB,
 
         input [`WORD_SIZE - 1 : 0] MDR_MEM,
-        output [`WORD_SIZE - 1 : 0] MDR_WB
+        output reg [`WORD_SIZE - 1 : 0] MDR_WB
     );
 
     always @ (posedge clk) begin
@@ -345,7 +345,7 @@ module ID_EX_register(
 
             // ------------------  Data latches
             pc_WB <= 0;
-            instruction_WB <= {`OPCODE_NOP, 12{0}};
+            instruction_WB <= {`OPCODE_NOP, {12{0}}};
             
             rs_WB <= 0;
             rt_WB <= 0;
@@ -371,7 +371,7 @@ module ID_EX_register(
             rt_WB <= rt_MEM;
             imm_signed_WB <= imm_signed_MEM;
             write_reg_addr_WB <= write_reg_addr_MEM;
-            ALU_out_WB <= ALU_result_MEM;
+            ALU_out_WB <= ALU_out_MEM;
             MDR_WB <= MDR_MEM;
         end
     end

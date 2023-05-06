@@ -39,40 +39,6 @@ module control_unit(
     wire isJtype_Jump;
     wire isRtype_Jump;
     
-    // nop
-    // Every control signals are 0
-    if (opcode == `OPCODE_NOP) begin
-    // ID signal
-    PCSource = 0;
-    isJump = 0;
-
-    // EX signal
-    ALUSrcB = 0;
-    ALUOperation = 0;
-    isItype_Branch = 0;
-
-    // MEM signal
-    d_readM = 0;
-    d_writeM = 0;
-
-    // WB signal
-    output_active = 0;
-    is_halted = 0;
-    RegDst = 0; // write to 0: rt, 1: rd, 2: $2 (JAL)
-    RegWrite = 0;
-    MemtoReg = 0; // write 0: ALU = 0, 1: MDR, 2: PC + 1
-    
-    // type of instructions
-    isRtype_Arithmetic = 0;
-    isRtype_Special = 0;
-    isRtype_Halt = 0;
-    isItype_Arithmetic = 0;
-    isItype_Memory = 0;
-    isJtype_Jump = 0;
-    isRtype_Jump = 0;
-    end
-
-    else begin
     // is Arithmetic Rtype instruction
     assign isRtype_Arithmetic = (opcode == `typeR)
                      && ( (func_code == `FUNC_ADD)
@@ -174,7 +140,7 @@ module control_unit(
     
     
     // PCSource
-    assign PCSource = (isItype_Branch  && stage == `STAGE_EX) ? `PCSRC_BRANCH :     // pc from branch
+    assign PCSource = (isItype_Branch) ? `PCSRC_BRANCH :     // pc from branch
                       isJtype_Jump ? `PCSRC_JUMP :      // pc from jump
                       (opcode == `typeR && ( func_code == `FUNC_JPR || func_code == `FUNC_JRL)) ? `PCSRC_REG :  // pc from register 2
                       `PCSRC_SEQ; // pc + 1
@@ -184,6 +150,6 @@ module control_unit(
     assign RegWrite = ( (opcode == `typeR && func_code == `FUNC_JRL) // stage ID JRL
                       || opcode == `OPCODE_JAL ) ? 1'b1 : 1'b0 ; // stage ID JAL
      
-    end
+
 
 endmodule

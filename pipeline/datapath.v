@@ -2,8 +2,8 @@
 `include "constants.v"
 `include "opcodes.v"
 module datapath
-  #(parameter DATA_FORWARDING,
-    parameter BRANCH_PREDICTOR)
+  #(parameter DATA_FORWARDING = 0,
+    parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN)
     (
         input clk,
         input reset_n,
@@ -41,11 +41,11 @@ module datapath
         output                       d_writeM,
         inout [`WORD_SIZE-1:0]        i_data,
         inout [`WORD_SIZE-1:0]        d_data,
-        output reg [`WORD_SIZE-1:0]   output_port,
+        output [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
         output reg [`WORD_SIZE-1:0]  num_inst
         
-    )
+    );
         // reg declaration
         reg [`WORD_SIZE-1:0]   num_branch; // total number of branches
         reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
@@ -75,7 +75,7 @@ module datapath
 
             // load stall
             .d_MEM_read_EX(d_readM_EX),
-            .d_MEM_read_mem(d_readM_MEM),
+            .d_MEM_read_MEM(d_readM_MEM),
             .rt_EX(rt_EX), 
             .rt_MEM(rt_MEM),
             .rt_WB(rt_WB),
@@ -89,8 +89,7 @@ module datapath
         );
 
         // branch_predictor
-        branch_predictor #(BRANCH_PREDICTOR.(BRANCH_PREDICTOR),
-                            BTB_IDX_SIZE.(BTB_IDX_SIZE))
+        branch_predictor #(.BRANCH_PREDICTOR(BRANCH_PREDICTOR))
         bp (
 
             .clk(clk),
@@ -281,7 +280,7 @@ module datapath
             .rt_MEM(rt_MEM),
             .RF_data2_MEM(RF_data2_MEM),      // for SWD`        
             .imm_signed_MEM(imm_signed_MEM),
-            .write_reg_addr_MEM
+            .write_reg_addr_MEM(write_reg_addr_MEM),
 
             .ALU_result_EX(ALU_result_EX),
             .ALU_out_MEM(ALU_out_MEM)
@@ -326,7 +325,7 @@ module datapath
             .rs_WB(rs_WB),
             .rt_WB(rt_WB),
             .imm_signed_WB(imm_signed_WB),
-            .write_reg_addr_WB
+            .write_reg_addr_WB(write_reg_addr_WB),
 
             .ALU_out_MEM(ALU_out_MEM),
             .ALU_out_WB(ALU_out_WB),
@@ -404,16 +403,16 @@ module datapath
                                     2'd2;
 
         // branch predictor ID
-        assign jump_target = (opcode == `OPCODE_RTYPE && (func_code == `FUNC_JPR || func_code == `FUNC_JRL)) ?
+        assign jump_target = (opcode == `typeR && (func_code == `FUNC_JPR || func_code == `FUNC_JRL)) ?
                         RF_data1_ID :
                         {pc[15:12], jump_target_imm};
-        assign i_type_branch_target_ID = (pc_id + 1) + imm_signed_ID;
+        assign i_type_branch_target_ID = (pc_ID + 1) + imm_signed_ID;
         assign branch_target = isJump ? jump_target :i_type_branch_target_ID;
         assign jump_miss = isJump ? (jump_target != branch_predicted_pc_ID) : 1;
 
         // If this is a branch instruction and BTB tag match failed in IF,
         // update tag in ID stage.
-        assign update_tag = ((isJump || isItype_Branch_ID) && !tag_match_ID) ? 1 : 0;
+        assign update_tag = ((isJump || isItype_Branch) && !tag_match_ID) ? 1 : 0;
 
 
         // ------------------------- EX STAGE ------------------------------
@@ -450,7 +449,7 @@ module datapath
 
 
         // ----------- ALU.v wires -----------
-        wire [`WORD_SIZE - 1 : 0] ALU_in_B
+        wire [`WORD_SIZE - 1 : 0] ALU_in_B;
         assign ALU_in_B = ALUSrcB_EX == `ALUSRCB_REG ? RF_data2_EX :
                           ALUSrcB_EX == `ALUSRCB_IMM ? imm_signed_EX:
                           0;
