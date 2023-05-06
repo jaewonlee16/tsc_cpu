@@ -87,7 +87,7 @@ module ID_EX_register(
     input [`WORD_SIZE - 1 : 0] i_type_branch_target_ID,
     input [1 : 0] rs_ID,
     input [1 : 0] rt_ID,
-    input [1 : 0] rd_ID
+    input [1 : 0] rd_ID,
     input [`WORD_SIZE - 1] RF_data1_ID,
     input [`WORD_SIZE - 1] RF_data2_ID,
     input [`WORD_SIZE - 1] imm_signed_ID,
