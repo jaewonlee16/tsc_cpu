@@ -334,16 +334,6 @@ module datapath
             .MDR_MEM(d_data),
             .MDR_WB(MDR_WB)
         );
-        
-        IR ir(
-            .clk(clk),
-            .reset_n(reset_n),
-
-            .IRWrite(ir_write),
-            .data(i_data),
-            .instruction()
-        );
-
 
 
         // ------------------------  Datapath  ------------------------ //
