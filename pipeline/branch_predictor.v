@@ -68,8 +68,8 @@ module branch_predictor
          //
          // This should be done for all predictors including always taken.
          if (update_tag) begin
-            tag_table[btb_idx_collided] <= pc_tag_collided;
-            btb[btb_idx_collided] <= branch_target;
+            tag_table[btb_idx_for_btb_update] <= tag_for_btb_update;
+            btb[btb_idx_for_btb_update] <= branch_target;
          end
          if (update_bht) // TODO
       end
