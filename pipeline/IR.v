@@ -9,7 +9,7 @@ module IR (
     
     always @ (posedge clk) begin
         if (~reset_n) instruction <= 0;
-        else if (nop) instruction <= {16{1'b1}};
+        else if (nop) instruction <= {OPCODE_NOP, 12{1'b0}};
         else if (IRWrite) instruction <= data;
     end
    
