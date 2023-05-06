@@ -130,7 +130,7 @@ module datapath
         );
         
         ALU ALU_UUT(
-            .A(RF_data1_EX),
+            .A(ALU_in_A),
             .B(ALU_in_B),
             .Cin(0),
             .OP(ALUOperation_EX),
@@ -448,11 +448,32 @@ module datapath
         wire [`WORD_SIZE - 1 : 0] ALU_result_EX;
 
 
+        // ------------forwarding -----------
+
+        wire [1 : 0] forwardA_src, forwardB_src;
+
+        // forwardA
+        assign forwardA_src = DATA_FORWARDING && RegWrite_MEM && rs_EX == write_reg_MEM ? `FORWARD_SRC_MEM: 
+                              DATA_FORWARDING && RegWrite_WB && rs_EX == write_reg_WB ? `FORWARD_SRC_WB:
+                                                                                   `FORWARD_SRC_RF;
+           
+        // forwardB
+        assign forwardB_src = DATA_FORWARDING && RegWrite_MEM && rt_EX == write_reg_MEM ? `FORWARD_SRC_MEM: 
+                              DATA_FORWARDING && RegWrite_WB && rt_EX == write_reg_WB ? `FORWARD_SRC_WB:
+                                                                                   `FORWARD_SRC_RF;
+
         // ----------- ALU.v wires -----------
-        wire [`WORD_SIZE - 1 : 0] ALU_in_B;
-        assign ALU_in_B = ALUSrcB_EX == `ALUSRCB_REG ? RF_data2_EX :
+        
+        wire [`WORD_SIZE - 1 : 0] ALU_in_A, ALU_in_B;
+        assign ALU_in_A = forwardA_src == `FORWARD_SRC_MEM ? ALU_out_MEM:
+                          forwardA_src == `FORWARD_SRC_WB ? RF_write_data:
+                          RF_data1_EX; 
+        assign ALU_in_B = ALUSrcB_EX == `ALUSRCB_ZERO ? 0:
                           ALUSrcB_EX == `ALUSRCB_IMM ? imm_signed_EX:
-                          0;
+                          forwardB_src == `FORWARD_SRC_MEM ? ALU_out_MEM:;
+                          forwardB_src == `FORWARD_SRC_WB ? RF_write_data:
+                          RF_data2_EX; 
+
         wire ALU_overflow;
         wire [1 : 0] ALU_Compare;
 
@@ -587,5 +608,7 @@ module datapath
             if (output_active_WB) output_port <= wwd_data;
             else output_port <= output_port;
         end
+
+
 
 endmodule
