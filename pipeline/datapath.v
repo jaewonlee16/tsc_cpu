@@ -43,7 +43,7 @@ module datapath
         inout [`WORD_SIZE-1:0]        d_data,
         output reg [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
-        output [`WORD_SIZE-1:0]       num_inst
+        output reg [`WORD_SIZE-1:0]  num_inst
         
     )
         // reg declaration
@@ -118,12 +118,12 @@ module datapath
         );   
 
         RF rf(
-            .write(),
+            .write(Reg_write_WB),
             .clk(clk),
             .reset_n(reset_n),
             .addr1(rs_ID),
             .addr2(rt_ID),
-            .addr3(),
+            .addr3(write_reg_addr_WB),
             .wwd_addr(wwd_addr),
             .data1(RF_data1_ID),
             .data2(RF_data2_ID),
@@ -167,6 +167,8 @@ module datapath
 
             // ----------------------------- control signal inputs and outputs
             // input ports
+            isJump_ID(isJump),
+
             // EX
             ALUSrcB_ID(ALUSrcB),
             ALUOperation_ID(ALUOperation),
@@ -184,6 +186,8 @@ module datapath
             MemtoReg_ID(MemtoReg), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // output ports
+            isJump_EX(isJump_EX),
+
             // EX
             ALUSrcB_EX(ALUSrcB_EX),
             ALUOperation_EX(ALUOperation_EX),
@@ -303,34 +307,34 @@ module datapath
             
             // ports
             // WB
-            output_active_WB(),
+            output_active_WB(output_active_WB),
             is_halted_WB(is_halted), 
-            RegDst_WB(), // write to 0: rt, 1: rd, 2: $2 (JAL)
-            RegWrite_WB(),
-            MemtoReg_WB(), // write 0: ALU, 1: MDR, 2: PC + 1
+            RegDst_WB(RegDst_WB), // write to 0: rt, 1: rd, 2: $2 (JAL)
+            RegWrite_WB(RegWrite_WB),
+            MemtoReg_WB(MemtoReg_WB), // write 0: ALU, 1: MDR, 2: PC + 1
             
             // ----------------------------------- Data latch
             pc_MEM(pc_MEM),
             instruction_MEM(instruction_MEM),
 
-            pc_WB(),
-            instruction_WB(),
+            pc_WB(pc_WB),
+            instruction_WB(instruction_WB),
 
             rs_MEM(rs_MEM),
             rt_MEM(rt_MEM),
             imm_signed_MEM(imm_signed_MEM),
             write_reg_addr_MEM(write_reg_addr_MEM),
 
-            rs_WB(),
-            rt_WB(),
-            imm_signed_WB(),
+            rs_WB(rs_WB),
+            rt_WB(rt_WB),
+            imm_signed_WB(imm_signed_WB),
             write_reg_addr_WB
 
             ALU_out_MEM(ALU_out_MEM),
-            ALU_out_WB(),
+            ALU_out_WB(ALU_out_WB),
 
             MDR_MEM(d_data),
-            MDR_WB()
+            MDR_WB(MDR_WB)
         );
 
 
@@ -418,6 +422,8 @@ module datapath
         // -----------------------------------------------------------------
         // -- pipeline register wires -- //
         // control signal wires
+        wire isJump_EX;
+
         wire [1 : 0] ALUSrcB_EX;
         wire [3 : 0] ALUOperation_EX;
         wire isItype_Branch_EX;
@@ -503,6 +509,14 @@ module datapath
                 pc <= pc;
         end
 
+        // num_branch
+        always @ (posedge clk) begin
+            if (reset_n) num_branch <= 0;
+            else if (isItype_Branch_EX || isJump_EX) num_branch <= num_branch + 1;
+            else num_branch <= num_branch;
+        end
+
+
         // --------------------------- MEM -------------------------------//
         // ---------------------------------------------------------------//
         // pipeline wires
@@ -540,13 +554,32 @@ module datapath
         wire RegWrite_WB;
         wire [1 : 0] MemtoReg_WB;
 
-        wire pc_WB;
-        wire instruction_WB;
+        wire [`WORD_SIZE - 1 : 0] pc_WB;
+        wire [`WORD_SIZE - 1 : 0] instruction_WB;
 
         wire [1 : 0] rs_WB, rt_WB;
-        wire imm_signed_WB;
+        wire [`WORD_SIZE - 1 : 0] imm_signed_WB;
+        wire [1 : 0] write_reg_addr_WB;
+        wire [`WORD_SIZE - 1 : 0] ALU_out_WB;
+        wire [`WORD_SIZE - 1 : 0] MDR_WB;
 
-
-
+        // RF write
+        wire [`WORD_SIZE - 1 : 0] RF_write_data;
+        assign RF_write_data = MemtoReg_WB == `REGWRITESRC_ALU ? ALU_out_WB:
+                               MemtoReg_WB == `REGWRITESRC_MEM ? MDR_WB:
+                               /* `REGWRITESRC_PC */ pc_EX + 1;
+        // WWD
         wire [1 : 0] wwd_addr;
         assign wwd_addr = output_active_WB ? rs_WB : 2'bz;
+
+        // num_inst
+        wire [3 : 0] opcode_WB;
+        assign opcode_WB = instruction_WB[15 : 12];
+
+        always @ (posedge clk) begin
+            if (reset_n) num_inst <= 0;
+            else if (opcode_WB == `OPCODE_NOP) num_inst <= num_inst;
+            else num_inst <= num_inst + 1;
+        end
+
+endmodule
