@@ -4,7 +4,7 @@
 `include "opcodes.v"
 
 module hazard_control_unit
-   #(parameter DATA_FORWARDING = 0)
+   #(parameter DATA_FORWARDING = 1)
    (input [3:0] opcode,
     input [5:0] func_code,
 
@@ -104,7 +104,7 @@ module hazard_control_unit
    wire load_stall_check;
    assign load_stall_check = 
            ((use_rs || use_rt) && d_MEM_read_EX && (rs_ID == rt_EX || rt_ID == rt_EX)) ||
-           (!DATA_FORWARDING && (use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM))  ? 1 : 0;
+           ((use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM))  ? 1 : 0;
   
 
     always @ (*) begin

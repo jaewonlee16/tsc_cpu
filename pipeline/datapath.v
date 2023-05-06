@@ -2,7 +2,7 @@
 `include "constants.v"
 `include "opcodes.v"
 module datapath
-  #(parameter DATA_FORWARDING = 0,
+  #(parameter DATA_FORWARDING = 1,
     parameter BRANCH_PREDICTOR = `BRANCH_ALWAYS_TAKEN)
     (
         input clk,
@@ -43,14 +43,13 @@ module datapath
         inout [`WORD_SIZE-1:0]        d_data,
         output reg [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
-        output [`WORD_SIZE-1:0]  num_inst
+        output reg [`WORD_SIZE-1:0]  num_inst
         
     );
         // reg declaration
         reg [`WORD_SIZE-1:0]   num_branch; // total number of branches
         reg [`WORD_SIZE-1:0]   num_branch_miss; // number of branch prediction miss
         reg [`WORD_SIZE - 1 : 0] pc;
-        reg [`WORD_SIZE-1:0] real_num_inst;
 
 
         // ------------------------------------ modules --------------------------------
@@ -492,6 +491,7 @@ module datapath
                              || opcode_EX == `OPCODE_BEQ && ALU_Compare == `ALU_SAME  // equal
                              || opcode_EX == `OPCODE_BGZ && ALU_Compare == `ALU_BIG  // greater than
                              || opcode_EX == `OPCODE_BLZ && ALU_Compare == `ALU_SMALL) ? 1 : 0;  // less than
+        // the actual calculated next pc for i type branches
         assign calculated_pc_EX = (isItype_Branch_EX && isBranchTaken) ? i_type_branch_target_EX : pc_EX + 1;
         assign update_bht = isItype_Branch_EX || isJump;
         assign branch_correct_or_notCorrect = isItype_Branch_EX ? branch_predicted_pc_EX == calculated_pc_EX:
@@ -499,6 +499,9 @@ module datapath
         assign i_branch_miss = isItype_Branch_EX && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
 
         // ID + EX
+        // note that calculated_pc_EX is the next pc
+        // whereas bht is updated with the current pc
+        // which is "pc_for_bht_update"
         assign pc_for_bht_update = isItype_Branch_EX ? pc_EX:
                                    isJump ? pc_ID: 0;
 
@@ -586,24 +589,32 @@ module datapath
         assign RF_write_data = MemtoReg_WB == `REGWRITESRC_ALU ? ALU_out_WB:
                                MemtoReg_WB == `REGWRITESRC_MEM ? MDR_WB:
                                /* `REGWRITESRC_PC */ pc_WB + 1;
+         
         // WWD
+        // another RF port is used for WWD
+        // By doing this, no need to stall at WWD instructions
+        // because WWD reads after write is finished
         wire [1 : 0] wwd_addr;
         wire [`WORD_SIZE - 1 : 0] wwd_data;
         assign wwd_addr = output_active_WB ? rs_WB : 2'bz;
 
         // num_inst
+        // update num_inst at WB stage which is the end of pipeline
+        // but don't update nop
         wire [3 : 0] opcode_MEM;
         wire [3 : 0] opcode_WB;
         assign opcode_MEM = instruction_MEM[15 : 12];
         assign opcode_WB = instruction_WB[15 : 12];
 
         always @ (posedge clk) begin
-            if (~reset_n) real_num_inst <= 0;
-            else if (opcode_WB == `OPCODE_NOP) real_num_inst <= real_num_inst;
-            else real_num_inst <= real_num_inst + 1;
+            if (~reset_n) num_inst <= 0;
+            else if (opcode_WB == `OPCODE_NOP) num_inst <= num_inst;
+            else num_inst <= num_inst + 1;
         end
-        assign num_inst = /*opcode_WB == `OPCODE_NOP ? 16'bz :*/real_num_inst;
         
+        // output port
+        // Because of nop num_inst can have the same value for more than 2 cycles
+        // In order to sync with num_inst and output_port, output_port is latched
         always @ (posedge clk) begin
             if (output_active_WB) output_port <= wwd_data;
             else output_port <= output_port;

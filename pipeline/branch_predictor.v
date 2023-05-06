@@ -64,8 +64,7 @@ module branch_predictor
    always @(posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<2**BTB_IDX_SIZE; i=i+1) begin
-            // inititialize bht to weakly taken
-            // inititialize everything else to 0
+            // inititialization
             tag_table[i] <= 1;
             bht[i] <= 2'd3; // initialize to 3
             btb[i] <= 0;
@@ -81,6 +80,7 @@ module branch_predictor
          end
          if (update_bht && BRANCH_PREDICTOR == `BRANCH_SATURATION_COUNTER) begin
             if (branch_correct_or_notCorrect) begin
+                // add 1 if prediction was correct
                 bht[btb_idx_for_bht_update] <= bht[btb_idx_for_bht_update] == 2'd3 ? bht[btb_idx_for_bht_update] : bht[btb_idx_for_bht_update] + 1;
             end
             else

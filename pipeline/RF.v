@@ -28,6 +28,7 @@ module RF(
     end
     
     // sequential logic
+    // negedge write
     always @ (negedge clk)
     begin
         // reset all values of regiser to 0
