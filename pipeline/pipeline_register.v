@@ -42,6 +42,8 @@ module ID_EX_register(
 
     // ----------------------------- control signal inputs and outputs
     // input ports
+    input isJump_ID,
+
     // EX
     input [1 : 0] ALUSrcB_ID,
     input [3 : 0] ALUOperation_ID,
@@ -59,6 +61,8 @@ module ID_EX_register(
     input [1 : 0] MemtoReg_ID, // write 0: ALU, 1: MDR, 2: PC + 1
     
     // output ports
+    output isJump_EX,
+
     // EX
     output reg [1 : 0] ALUSrcB_EX,
     output reg [3 : 0] ALUOperation_EX,
@@ -107,6 +111,7 @@ module ID_EX_register(
     always @ (posedge clk) begin
         if (~reset_n || flush) begin
             // ----------------- control signals
+            isJump_EX <= 0;
             // EX
             ALUSrcB_EX <= 0;
             ALUOperation_EX <= 0;
@@ -139,6 +144,8 @@ module ID_EX_register(
         end
         else if (~stall) begin
             // ----------------- control signals
+            isJump_EX <= isJump_ID;
+
             // EX
             ALUSrcB_EX <= ALUSrcB_ID;
             ALUOperation_EX <= ALUOperation_ID;
