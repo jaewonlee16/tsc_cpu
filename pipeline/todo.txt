@@ -4,3 +4,6 @@ wwd output must calculate with RegDst_WB(not write_reg_addr_WB) beacause there i
 
 delete ir, ir_write, ir wire etc.
 because ir is IFID register
+
+num_branch calculated at WB like wwd.
+need to decode instruction at WB.
