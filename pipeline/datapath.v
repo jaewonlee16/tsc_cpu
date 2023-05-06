@@ -66,21 +66,19 @@ module datapath
             // signals that determine when to stall
             .rs_ID(rs_ID), 
             .rt_ID(rt_ID), 
-            .Reg_write_EX(),
-            .Reg_write_MEM(),
-            .Reg_write_WB(),
-            .dest_EX(),             // write_reg_addr_EX 
-            .dest_MEM(),            // write_reg_addr_MEM 
-            .dest_WB(),            // write_reg_addr_WB 
+            .Reg_write_EX(RegWrite_EX),
+            .Reg_write_MEM(RegWrite_MEM),
+            .Reg_write_WB(RegWrite_WB),
+            .dest_EX(write_reg_addr_EX),             // write_reg_addr_EX 
+            .dest_MEM(write_reg_addr_MEM),            // write_reg_addr_MEM 
+            .dest_WB(write_reg_addr_WB),            // write_reg_addr_WB 
 
             // load stall
-            .d_MEM_write_WB(),
-            .d_MEM_read_EX(),
-            .d_MEM_read_mem(),
-            .d_MEM_read_WB(),
-            .rt_EX(), 
-            .rt_MEM(),
-            .rt_WB(),
+            .d_MEM_read_EX(d_readM_EX),
+            .d_MEM_read_mem(d_readM_MEM),
+            .rt_EX(rt_EX), 
+            .rt_MEM(rt_MEM),
+            .rt_WB(rt_WB),
 
             // control signals
             .stall_IFID(stall_IFID), // stall pipeline IF_ID_register
