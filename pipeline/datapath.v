@@ -269,13 +269,13 @@ module datapath
 
             rs_EX(),
             rt_EX(),
-            B_EX(),
+            RF_data2_EX(),
             imm_signed_EX(),
             write_reg_addr_EX(),
 
             rs_MEM(),
             rt_MEM(),
-            B_MEM(),      // for SWD`        
+            RF_data2_MEM(),      // for SWD`        
             imm_signed_MEM(),
             write_reg_addr_MEM
 
