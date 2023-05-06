@@ -8,9 +8,11 @@ module RF(
     input [1:0] addr1,
     input [1:0] addr2,
     input [1:0] addr3,
+    input [1:0] wwd_addr,
     output reg [15 : 0] data1,
     output reg [15 : 0] data2,
-    input [15 : 0] data3
+    input [15 : 0] data3,
+    output [15 : 0] wwd_data
     );
     
     reg [15 : 0] register [3 : 0];
@@ -22,6 +24,7 @@ module RF(
     begin
         data1 = register[addr1];
         data2 = register[addr2];
+        wwd_data = register[wwd_addr];
     end
     
     // sequential logic
