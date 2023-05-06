@@ -1,3 +1,6 @@
 add nop to pipeline register for calculating num_inst
 
 wwd output must calculate with RegDst_WB(not write_reg_addr_WB) beacause there is no stall
+
+delete ir, ir_write, ir wire etc.
+because ir is IFID register
