@@ -60,7 +60,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 				// i_count <= i_count + 1;
 				is_i_counting <= 1;
 			end
-			else if (is_i_counting) i_count <= i_count + 1;
+			if (is_i_counting) i_count <= i_count + 1;
 			
 			if (d_count == 2`LATENCY - 1) begin
 				d_count <= 0;
@@ -70,7 +70,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 				// d_count <= d_count + 1;
 				is_d_counting <= 1;
 			end
-			else if (is_d_counting) d_count <= d_count + 1;
+			if (is_d_counting) d_count <= d_count + 1;
 
 		end
 
