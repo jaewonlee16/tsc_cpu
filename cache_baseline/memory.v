@@ -3,6 +3,7 @@
 `define MEMORY_SIZE 256	//	size of memory is 2^8 words (reduced size)
 `define WORD_SIZE 16	//	instead of 2^16 words to reduce memory
 			//	requirements in the Active-HDL simulator 
+`define LATENCY 2
 
 module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM, d_address, d_data);
 	input clk;
@@ -48,22 +49,25 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 			d_count <= 0;
 		end
 
-		else if (i_count == 2'd2) begin 
+		else if (i_count == `LATENCY - 1) begin 
 			i_count <= 0;
 			is_i_counting <= 0;
 		end
-		else if (d_count == 2'd2) begin
+		else if (d_count == 2`LATENCY - 1) begin
 			d_count <= 0;
 			is_d_counting <= 0;
 		end
 		else if (i_readM || d_readM) begin
-			i_count <= i_count + 1;
+			// i_count <= i_count + 1;
 			is_i_counting <= 1;
 		end
 		else if (d_readM || d_writeM) begin
-			d_count <= d_count + 1;
+			// d_count <= d_count + 1;
 			is_d_counting <= 1;
 		end
+		else if (is_i_counting) i_count <= i_count + 1;
+		else if (is_d_counting) d_count <= d_count + 1;
+
 	end
 	
 	always @(posedge clk)
@@ -284,11 +288,11 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 				memory[16'hd4] <= 16'hf81c;
 				memory[16'hd5] <= 16'hf01d;
 			end
-		else if(i_count == 2'd2) begin
+		else if(i_count == `LATENCY - 1) begin
 			if(i_readM)i_outputData <= memory[i_address];
 			if(i_writeM)memory[i_address] <= i_data;
 		end
-		else if (d_count == 2'd2) begin
+		else if (d_count == `LATENCY - 1) begin
 			if(d_readM)d_outputData <= memory[d_address];
 			if(d_writeM)memory[d_address] <= d_data;
 		end
