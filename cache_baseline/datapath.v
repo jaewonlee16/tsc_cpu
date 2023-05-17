@@ -52,6 +52,9 @@ module datapath
         reg [`WORD_SIZE - 1 : 0] pc;
 
 
+        
+
+
         // ------------------------------------ modules --------------------------------
         // hazard_control_unit
         hazard_control_unit #(.DATA_FORWARDING(DATA_FORWARDING))
