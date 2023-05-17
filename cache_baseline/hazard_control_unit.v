@@ -29,6 +29,8 @@ module hazard_control_unit
     input [1:0] rt_MEM,
     input [1:0] rt_WB,
 
+    input d_MEM_write_MEM,
+
     // control signals
     output reg  stall_IFID, // stall pipeline IF_ID_register
     output reg  flush_IFID, // flush if
@@ -36,6 +38,39 @@ module hazard_control_unit
     output reg  pc_write,
     output reg  ir_write
 );
+    //memory latency
+    reg [1 : 0] i_count;
+    reg [1 : 0] d_count;
+    reg is_i_counting;
+    reg is is_d_counting;
+
+    always @ (posedge clk) begin
+        if (!reset_n ) begin
+            i_count <= 0;
+            d_count <= 0;
+            is_i_counting <= 0;
+            is_d_counting <= 0;
+        end
+        else begin
+            if (i_count == `LATENCY - 1 || jump_miss || i_branch_miss) begin 
+                i_count <= 0;
+                is_i_counting <= 0;
+            end
+            else is_i_counting <= 1;
+            if (is_i_counting) i_count <= i_count + 1;
+
+            if (d_count == `LATENCY - 1) begin 
+                d_count <= 0;
+                is_d_counting <= 0;
+            end
+            else if (d_MEM_read_MEM || d_MEM_read_MEM) is_d_counting <= 1;
+
+            if (is_d_counting) begin
+                d_count <= d_count + 1;
+            end
+        end
+    end
+
     // --------------------------  type of instructions --------------------------- //
     // --------------------- the same wires from control_unit.v
     wire isRtype_Arithmetic;
@@ -133,6 +168,8 @@ module hazard_control_unit
             pc_write = 1;
             ir_write = 1;
         end
+
+        else if()
         
         // ---------- default ---------------//
         else begin
