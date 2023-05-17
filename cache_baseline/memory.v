@@ -36,8 +36,37 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 	
 	assign i_data = i_readM?i_outputData:`WORD_SIZE'bz;
 	assign d_data = d_readM?d_outputData:`WORD_SIZE'bz;
+
+	reg [1: 0] i_count;
+	reg [1 : 0] d_count;
+	reg is_i_counting;
+	reg is_d_counting;
+
+	always @ (posedge clk) begin
+		if (!reset_n) begin
+			i_count <= 0;
+			d_count <= 0;
+		end
+
+		else if (i_count == 2'd2) begin 
+			i_count <= 0;
+			is_i_counting <= 0;
+		end
+		else if (d_count == 2'd2) begin
+			d_count <= 0;
+			is_d_counting <= 0;
+		end
+		else if (i_readM || d_readM) begin
+			i_count <= i_count + 1;
+			is_i_counting <= 1;
+		end
+		else if (d_readM || d_writeM) begin
+			d_count <= d_count + 1;
+			is_d_counting <= 1;
+		end
+	end
 	
-	always@(posedge clk)
+	always @(posedge clk)
 		if(!reset_n)
 			begin
 				memory[16'h0] <= 16'h9023; 
@@ -255,11 +284,12 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 				memory[16'hd4] <= 16'hf81c;
 				memory[16'hd5] <= 16'hf01d;
 			end
-		else
-			begin
-				if(i_readM)i_outputData <= memory[i_address];
-				if(i_writeM)memory[i_address] <= i_data;
-				if(d_readM)d_outputData <= memory[d_address];
-				if(d_writeM)memory[d_address] <= d_data;
-			end
+		else if(i_count == 2) begin
+			if(i_readM)i_outputData <= memory[i_address];
+			if(i_writeM)memory[i_address] <= i_data;
+		end
+		else if (d_count == 2) begin
+			if(d_readM)d_outputData <= memory[d_address];
+			if(d_writeM)memory[d_address] <= d_data;
+		end
 endmodule
