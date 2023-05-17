@@ -49,4 +49,4 @@
 `define FORWARD_SRC_WB 1
 `define FORWARD_SRC_RF 2
 
-`define LATENCY 2
+`define LATENCY 1
