@@ -46,7 +46,7 @@ module hazard_control_unit
 );
     //memory latency
 
-    reg [1 : 0] d_count;
+    reg [1 : 0] d_count; // for counting cycle for writing d_data
     reg is_d_counting;
 /*
     always @ (posedge clk) begin
@@ -68,7 +68,7 @@ module hazard_control_unit
                 d_count <= 0;
                 is_d_counting <= 0;
             end
-            else if (d_MEM_read_MEM || d_MEM_read_MEM) is_d_counting <= 1;
+            else if (d_MEM_write_MEM) is_d_counting <= 1;
 
             if (is_d_counting) begin
                 d_count <= d_count + 1;
@@ -86,7 +86,7 @@ module hazard_control_unit
                 d_count <= 0;
                 is_d_counting <= 0;
             end
-            else if (d_MEM_read_MEM || d_MEM_read_MEM) is_d_counting <= 1;
+            else if (d_MEM_write_MEM) is_d_counting <= 1;
 
             if (is_d_counting) begin
                 d_count <= d_count + 1;
