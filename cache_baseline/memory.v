@@ -284,11 +284,11 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 				memory[16'hd4] <= 16'hf81c;
 				memory[16'hd5] <= 16'hf01d;
 			end
-		else if(i_count == 2) begin
+		else if(i_count == 2'd2) begin
 			if(i_readM)i_outputData <= memory[i_address];
 			if(i_writeM)memory[i_address] <= i_data;
 		end
-		else if (d_count == 2) begin
+		else if (d_count == 2'd2) begin
 			if(d_readM)d_outputData <= memory[d_address];
 			if(d_writeM)memory[d_address] <= d_data;
 		end
