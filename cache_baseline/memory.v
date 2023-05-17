@@ -47,26 +47,32 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 		if (!reset_n) begin
 			i_count <= 0;
 			d_count <= 0;
-		end
-
-		else if (i_count == `LATENCY - 1) begin 
-			i_count <= 0;
 			is_i_counting <= 0;
-		end
-		else if (d_count == 2`LATENCY - 1) begin
-			d_count <= 0;
 			is_d_counting <= 0;
 		end
-		else if (i_readM || d_readM) begin
-			// i_count <= i_count + 1;
-			is_i_counting <= 1;
+
+		else begin
+			if (i_count == `LATENCY - 1) begin 
+				i_count <= 0;
+				is_i_counting <= 0;
+			end
+			else if (i_readM || d_readM) begin
+				// i_count <= i_count + 1;
+				is_i_counting <= 1;
+			end
+			else if (is_i_counting) i_count <= i_count + 1;
+			
+			if (d_count == 2`LATENCY - 1) begin
+				d_count <= 0;
+				is_d_counting <= 0;
+			end
+			else if (d_readM || d_writeM) begin
+				// d_count <= d_count + 1;
+				is_d_counting <= 1;
+			end
+			else if (is_d_counting) d_count <= d_count + 1;
+
 		end
-		else if (d_readM || d_writeM) begin
-			// d_count <= d_count + 1;
-			is_d_counting <= 1;
-		end
-		else if (is_i_counting) i_count <= i_count + 1;
-		else if (is_d_counting) d_count <= d_count + 1;
 
 	end
 	
