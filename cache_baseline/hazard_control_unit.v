@@ -32,6 +32,7 @@ module hazard_control_unit
     input [1:0] rt_WB,
 
     input d_MEM_write_MEM,
+    input [3 : 0] d_data_opcode;
 
     // control signals
     output reg  stall_IFID, // stall pipeline IF_ID_register
@@ -163,12 +164,27 @@ module hazard_control_unit
            ((use_rs || use_rt) && d_MEM_read_EX && (rs_ID == rt_EX || rt_ID == rt_EX)) ||
            ((use_rs || use_rt) && d_MEM_read_MEM && (rs_ID == rt_MEM || rt_ID == rt_MEM))  ? 1 : 0;
   
+    
+    wire d_mem_stall_check;
+    assign d_mem_stall_check = d_MEM_read_MEM && (d_data_opcode == `OPCODE_NOP)
 
     always @ (*) begin
         
           
-        
-        if (reg_write_stall_check || load_stall_check || data_forwarding_stall_check) begin
+        if (d_mem_stall_check) begin
+            // stall MEM to WB
+            flush_IFID = 0;
+            flush_IDEX = 0;
+            flush_MEMWB = 1;
+            stall_IFID = 1;
+            stall_IDEX = 1;
+            stall_EXMEM = 1;
+            pc_write = 0;
+            ir_write = 0;
+        end
+
+        else if (reg_write_stall_check || load_stall_check || data_forwarding_stall_check) begin
+            // stall ID to EX
            stall_IFID = 1;
            stall_IDEX = 0;
            stall_EXMEM = 0;
@@ -181,6 +197,7 @@ module hazard_control_unit
         end 
          // -------------- control hazards ----------------- //
         else if (i_branch_miss) begin
+            // flush ID to EX
             stall_IFID = 0;
             stall_IDEX = 0;
            stall_EXMEM = 0;
@@ -192,6 +209,7 @@ module hazard_control_unit
         end
 
         else if (jump_miss) begin
+            // flush IF to ID
             stall_IFID = 0;
             stall_IDEX = 0;
            stall_EXMEM = 0;
@@ -214,21 +232,6 @@ module hazard_control_unit
             flush_MEMWB = 0;
             pc_write = 1;
             ir_write = 1;
-        end
-        
-        // d_memory
-        // independent with i_mem
-        if (d_count == 2'd1) begin
-            // stall MEM to WB
-            flush_MEMWB = 1;
-            stall_IFID = 1;
-            stall_IDEX = 1;
-            stall_EXMEM = 1;
-            pc_write = 0;
-            ir_write = 0;
-         end
-
-        
     end
-
+    end
 endmodule

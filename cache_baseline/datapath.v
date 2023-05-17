@@ -85,6 +85,9 @@ module datapath
             .rt_MEM(rt_MEM),
             .rt_WB(rt_WB),
 
+            .d_MEM_write_MEM(d_writeM_MEM),
+            .d_data_opcode(d_data[15 : 12])
+
             // control signals
             .stall_IFID(stall_IFID), // stall pipeline IF_ID_register
             .stall_IDEX(stall_IDEX),
@@ -350,9 +353,6 @@ module datapath
         wire stall_IFID, stall_IDEX, stall_EXMEM, stall_MEMWB;
 
         assign flush_EXMEM = 0;
-        assign flush_MEMWB = 0;
-        assign stall_IDEX = 0;
-        assign stall_EXMEM = 0;
         assign stall_MEMWB = 0;
 
         //  ----------------------- IF STAGE --------------------------
