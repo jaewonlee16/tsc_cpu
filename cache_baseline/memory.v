@@ -49,7 +49,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
             if (i_count == `LATENCY) i_count <= 0;
             else if (i_readM) i_count <= i_count + 1;
             
-            if (d_count == `LATENCY) d_count <= 0;
+            if (d_count == `LATENCY + 1) d_count <= 0;
             else if (d_readM) d_count <= d_count + 1;
         end
     end
@@ -57,7 +57,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
     
 	// output when count is latency else nop
 	assign i_data = (i_count == `LATENCY) ? i_outputData:{`OPCODE_NOP, {12{1'b0}}};
-	assign d_data = (d_count == `LATENCY) ? d_outputData:{`OPCODE_NOP, {12{1'b0}}};
+	assign d_data = d_readM ? (d_count == `LATENCY + 1) ? d_outputData:{`OPCODE_NOP, {12{1'b0}}} : `WORD_SIZE'bz;
 	
 	always@(posedge clk)
 		if(!reset_n)

@@ -86,7 +86,7 @@ module datapath
             .rt_WB(rt_WB),
 
             .d_MEM_write_MEM(d_writeM_MEM),
-            .d_data_opcode(d_data[15 : 12])
+            .d_data_opcode(d_data[15 : 12]),
 
             // control signals
             .stall_IFID(stall_IFID), // stall pipeline IF_ID_register

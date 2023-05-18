@@ -32,7 +32,7 @@ module hazard_control_unit
     input [1:0] rt_WB,
 
     input d_MEM_write_MEM,
-    input [3 : 0] d_data_opcode;
+    input [3 : 0] d_data_opcode,
 
     // control signals
     output reg  stall_IFID, // stall pipeline IF_ID_register
@@ -47,48 +47,18 @@ module hazard_control_unit
     //memory latency
 
     reg [1 : 0] d_count; // for counting cycle for writing d_data
-    reg is_d_counting;
-/*
-    always @ (posedge clk) begin
-        if (!reset_n ) begin
-            i_count <= 0;
-            d_count <= 0;
-            is_i_counting <= 0;
-            is_d_counting <= 0;
-        end
-        else begin
-            if (i_count == `LATENCY - 1 || jump_miss || i_branch_miss) begin 
-                i_count <= 0;
-                is_i_counting <= 0;
-            end
-            else is_i_counting <= 1;
-            if (is_i_counting && i_count < `LATENCY - 1) i_count <= i_count + 1;
 
-            if (d_count == `LATENCY - 1) begin 
-                d_count <= 0;
-                is_d_counting <= 0;
-            end
-            else if (d_MEM_write_MEM) is_d_counting <= 1;
 
-            if (is_d_counting) begin
-                d_count <= d_count + 1;
-            end
-        end
-    end
-    */
     always @ (posedge clk) begin
         if (!reset_n ) begin
 
             d_count <= 0;
         end
         else begin
-            if (d_count == `LATENCY - 1) begin 
+            if (d_count == `LATENCY) begin 
                 d_count <= 0;
-                is_d_counting <= 0;
             end
-            else if (d_MEM_write_MEM) is_d_counting <= 1;
-
-            if (is_d_counting) begin
+            else if (d_MEM_write_MEM) begin
                 d_count <= d_count + 1;
             end
         end
@@ -166,7 +136,8 @@ module hazard_control_unit
   
     
     wire d_mem_stall_check;
-    assign d_mem_stall_check = d_MEM_read_MEM && (d_data_opcode == `OPCODE_NOP)
+    assign d_mem_stall_check = d_MEM_read_MEM && (d_data_opcode == `OPCODE_NOP) 
+                            || d_MEM_write_MEM && d_count < `LATENCY;
 
     always @ (*) begin
         
