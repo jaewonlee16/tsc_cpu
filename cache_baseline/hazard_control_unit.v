@@ -5,7 +5,9 @@
 
 module hazard_control_unit
    #(parameter DATA_FORWARDING = 1)
-   (input [3:0] opcode,
+   (input clk,
+    input reset_n,
+    input [3:0] opcode,
     input [5:0] func_code,
 
     // flush input signals
@@ -33,17 +35,19 @@ module hazard_control_unit
 
     // control signals
     output reg  stall_IFID, // stall pipeline IF_ID_register
+    output reg  stall_IDEX,
+    output reg  stall_EXMEM,
     output reg  flush_IFID, // flush if
     output reg  flush_IDEX, // flush id
+    output reg  flush_MEMWB,
     output reg  pc_write,
     output reg  ir_write
 );
     //memory latency
-    reg [1 : 0] i_count;
-    reg [1 : 0] d_count;
-    reg is_i_counting;
-    reg is is_d_counting;
 
+    reg [1 : 0] d_count;
+    reg is_d_counting;
+/*
     always @ (posedge clk) begin
         if (!reset_n ) begin
             i_count <= 0;
@@ -57,8 +61,26 @@ module hazard_control_unit
                 is_i_counting <= 0;
             end
             else is_i_counting <= 1;
-            if (is_i_counting) i_count <= i_count + 1;
+            if (is_i_counting && i_count < `LATENCY - 1) i_count <= i_count + 1;
 
+            if (d_count == `LATENCY - 1) begin 
+                d_count <= 0;
+                is_d_counting <= 0;
+            end
+            else if (d_MEM_read_MEM || d_MEM_read_MEM) is_d_counting <= 1;
+
+            if (is_d_counting) begin
+                d_count <= d_count + 1;
+            end
+        end
+    end
+    */
+    always @ (posedge clk) begin
+        if (!reset_n ) begin
+
+            d_count <= 0;
+        end
+        else begin
             if (d_count == `LATENCY - 1) begin 
                 d_count <= 0;
                 is_d_counting <= 0;
@@ -143,11 +165,16 @@ module hazard_control_unit
   
 
     always @ (*) begin
-
+        
+          
+        
         if (reg_write_stall_check || load_stall_check || data_forwarding_stall_check) begin
            stall_IFID = 1;
+           stall_IDEX = 0;
+           stall_EXMEM = 0;
            flush_IFID = 0;
            flush_IDEX = 1;
+           flush_MEMWB = 0;
            pc_write = 0;
            ir_write = 0;
            
@@ -155,31 +182,53 @@ module hazard_control_unit
          // -------------- control hazards ----------------- //
         else if (i_branch_miss) begin
             stall_IFID = 0;
+            stall_IDEX = 0;
+           stall_EXMEM = 0;
             flush_IFID = 1;
             flush_IDEX = 1;
+            flush_MEMWB = 0;
             pc_write = 1;
             ir_write = 1;
         end
 
         else if (jump_miss) begin
             stall_IFID = 0;
+            stall_IDEX = 0;
+           stall_EXMEM = 0;
             flush_IFID = 1;
             flush_IDEX = 0;
+            flush_MEMWB = 0;
             pc_write = 1;
             ir_write = 1;
         end
 
-        else if()
+        
         
         // ---------- default ---------------//
         else begin
             stall_IFID = 0;
+            stall_IDEX = 0;
+            stall_EXMEM = 0;
             flush_IFID = 0;
             flush_IDEX = 0;
+            flush_MEMWB = 0;
             pc_write = 1;
             ir_write = 1;
-
         end
+        
+        // d_memory
+        // independent with i_mem
+        if (d_count == 2'd1) begin
+            // stall MEM to WB
+            flush_MEMWB = 1;
+            stall_IFID = 1;
+            stall_IDEX = 1;
+            stall_EXMEM = 1;
+            pc_write = 0;
+            ir_write = 0;
+         end
+
+        
     end
 
 endmodule

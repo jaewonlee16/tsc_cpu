@@ -59,6 +59,8 @@ module datapath
         // hazard_control_unit
         hazard_control_unit #(.DATA_FORWARDING(DATA_FORWARDING))
         hazard (
+            .clk(clk),
+            .reset_n(reset_n),
             .opcode(opcode),
             .func_code(func_code),
 
@@ -85,8 +87,11 @@ module datapath
 
             // control signals
             .stall_IFID(stall_IFID), // stall pipeline IF_ID_register
+            .stall_IDEX(stall_IDEX),
+            .stall_EXMEM(stall_EXMEM),
             .flush_IFID(flush_IFID), // flush if
             .flush_IDEX(flush_IDEX), // flush id
+            .flush_MEMWB(flush_MEMWB),
             .pc_write(pc_write),
             .ir_write(ir_write)
         );
@@ -512,6 +517,7 @@ module datapath
         // pc update logic
         // sequential logic for pc and num_branch_miss
         always @ (posedge clk) begin
+            
             if (pc_write) begin
                 if (~reset_n) begin
                     pc <= 0;
@@ -526,6 +532,7 @@ module datapath
                     pc <= jump_target;
                     num_branch_miss <= num_branch_miss + 1;
                 end
+                else if (instruction_IF[15 : 12] == `OPCODE_NOP) pc <= pc;
                 else
                     pc <= branch_predicted_pc_IF;
             end
