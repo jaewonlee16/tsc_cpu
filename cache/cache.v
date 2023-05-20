@@ -4,18 +4,18 @@ module cache
     input reset_n,
     input read_cache,
     input write_cache,
-    input [WORD_SIZE-1:0] address_cache,
-    inout [WORD_SIZE-1:0] data_cache_datapath, // data connected to datapath
-    inout [4 * READ_SIZE - 1 : 0] data_mem_cache, // data connected to memory
+    input [`WORD_SIZE-1:0] address_cache,
+    inout [`WORD_SIZE-1:0] data_cache_datapath, // data connected to datapath
+    inout [4 * `WORD_SIZE - 1 : 0] data_mem_cache, // data connected to memory
 
-    output doneWrite,  // tells the cpu that writing is finshed
-    output [WORD_SIZE-1:0] address_memory,
-    output readM,
-    output writeM
+    output reg doneWrite,  // tells the cpu that writing is finshed
+    output [`WORD_SIZE-1:0] address_memory,
+    output reg readM,
+    output reg writeM
    );
     reg [`WORD_SIZE-1:0] temp_data;
-    reg [`WORD_SIZE-1:0] num_cache_access,    // for debugging
-    reg [`WORD_SIZE-1:0] num_cache_miss,      // for debugging
+    reg [`WORD_SIZE-1:0] num_cache_access;    // for debugging
+    reg [`WORD_SIZE-1:0] num_cache_miss;      // for debugging
 
    // for data_cache_datapath
     reg [`WORD_SIZE - 1 : 0] cache_output_data;
@@ -79,7 +79,9 @@ module cache
       endcase
       
    end
-
+   
+   integer i;
+   
    always @ (posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<4; i=i+1) begin

@@ -105,7 +105,7 @@ module cpu(
         .d_data(data_cache_datapath_d),
         .output_port(output_port),
         .is_halted(is_halted), 
-        .num_inst(num_inst)
+        .num_inst(num_inst),
         .doneWrite(doneWrite_d)
         );
 
