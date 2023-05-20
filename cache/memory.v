@@ -5,6 +5,8 @@
 			//	requirements in the Active-HDL simulator 
 `include "constants.v"
 `include "opcodes.v"
+`define INSTRUCTION_MEMORY_BLOCK {memory[i_address], memory[i_address + 1], memory[i_address + 2], memory[i_address + 3]}
+`define DATA_MEMORY_BLOCK {memory[d_address], memory[d_address + 1], memory[d_address + 2], memory[d_address + 3]}
 
 module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM, d_address, d_data);
 	input clk;
@@ -56,8 +58,8 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
             
     
 	// output when count is latency else nop
-	assign i_data = (i_count == `LATENCY) ? i_outputData:{`OPCODE_NOP, {12{1'b0}}};
-	assign d_data = d_readM ? (d_count == `LATENCY + 1) ? d_outputData:{`OPCODE_NOP, {12{1'b0}}} : `WORD_SIZE'bz;
+	assign i_data = (i_count == `LATENCY) ? i_outputData:{4{`OPCODE_NOP, {12{1'b0}}}};
+	assign d_data = d_readM ? (d_count == `LATENCY + 1) ? d_outputData : {4{`OPCODE_NOP, {12{1'b0}}}} : `WORD_SIZE'bz;
 	
 	always@(posedge clk)
 		if(!reset_n)
@@ -279,9 +281,9 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 			end
 		else
 			begin
-				if(i_readM)i_outputData <= memory[i_address];
-				if(i_writeM)memory[i_address] <= i_data;
-				if(d_readM)d_outputData <= memory[d_address];
-				if(d_writeM)memory[d_address] <= d_data;
+				if(i_readM)i_outputData <= `INSTRUCTION_MEMORY_BLOCK;
+				if(i_writeM) `INSTRUCTION_MEMORY_BLOCK <= i_data;
+				if(d_readM)d_outputData <= `DATA_MEMORY_BLOCK;
+				if(d_writeM) `DATA_MEMORY_BLOCK <= d_data;
 			end
 endmodule
