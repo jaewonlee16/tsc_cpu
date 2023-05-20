@@ -30,9 +30,9 @@ module cache
    wire [1:0] index;
    wire [WORD_SIZE-5:0] tag;
    wire [1:0] block_offset;             
-   assign index = address[3:2];
-   assign tag = address[WORD_SIZE-1:4];
-   assign block_offset = address[1:0];
+   assign index = address_cache[3:2];
+   assign tag = address_cache[WORD_SIZE-1:4];
+   assign block_offset = address_cache[1:0];
 
    // cache hit
    wire hit;
