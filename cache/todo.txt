@@ -1,0 +1,3 @@
+erase i_counting and d_counting in memory.v
+
+				{memory[i_address], memory[i_address + 1], memory[i_address + 2], memory[i_address + 3]}
