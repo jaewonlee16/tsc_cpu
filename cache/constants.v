@@ -50,3 +50,4 @@
 `define FORWARD_SRC_RF 2
 
 `define LATENCY 1
+`define NOP {`OPCODE_NOP, 12'b0}
