@@ -14,13 +14,13 @@ module cpu(
         output i_readM, 
         output i_writeM, 
         output [`WORD_SIZE-1:0] i_address, 
-        inout [`WORD_SIZE-1:0] i_data, 
+        inout [4*`WORD_SIZE-1:0] i_data, 
 
 	// Data memory interface
         output d_readM, 
         output d_writeM, 
         output [`WORD_SIZE-1:0] d_address, 
-        inout [`WORD_SIZE-1:0] d_data, 
+        inout [4*`WORD_SIZE-1:0] d_data, 
 
         output [`WORD_SIZE-1:0] num_inst, 
         output [`WORD_SIZE-1:0] output_port, 
@@ -31,7 +31,6 @@ module cpu(
 	parameter DATA_FORWARDING = 1;
     parameter BRANCH_PREDICTOR = `BRANCH_SATURATION_COUNTER;
     
-        assign i_readM = 1;
         assign i_writeM = 0;
 
 
@@ -96,17 +95,53 @@ module cpu(
         .MemtoReg(MemtoReg), // write 0: ALU, 1: MDR, 2: PC + 1
 
         // --------------------------- cpu.v signals
-        .i_address(i_address),
-        .d_address(d_address),
-        .i_readM(i_readM),
-        .d_readM(d_readM),
-        .i_writeM(i_writeM),
-        .d_writeM(d_writeM),
-        .i_data(i_data),
-        .d_data(d_data),
+        .i_address(address_cache_i),
+        .d_address(address_cache_d),
+        .i_readM(read_cache_i),
+        .d_readM(read_cache_d),
+        .i_writeM(write_cache_i),
+        .d_writeM(write_cache_d),
+        .i_data(data_cache_datapath_i),
+        .d_data(data_cache_datapath_d),
         .output_port(output_port),
         .is_halted(is_halted), 
         .num_inst(num_inst)
+        .doneWrite(doneWrite_d)
+        );
+
+
+        cache instruction_cache(
+                
+        .clk(!clk),
+        .reset_n(reset_n),
+        .read_cache(read_cache_i),
+        .write_cache(write_cache_i),
+        .address_cache(address_cache_i),
+        .data_cache_datapath(data_cache_datapath_i), // data connected to datapath
+        .data_mem_cache(i_data), // data connected to memory
+
+        .doneWrite(),  // tells the cpu that writing is finshed
+        .address_memory(i_address),
+        .readM(i_readM),
+        .writeM()
+
+        );
+
+        cache data_cache(
+                
+        .clk(!clk),
+        .reset_n(reset_n),
+        .read_cache(read_cache_d),
+        .write_cache(write_cache_d),
+        .address_cache(address_cache_d),
+        .data_cache_datapath(data_cache_datapath_d), // data connected to datapath
+        .data_mem_cache(d_data), // data connected to memory
+
+        .doneWrite(doneWrite_d),  // tells the cpu that writing is finshed
+        .address_memory(d_address),
+        .readM(d_readM),
+        .writeM(d_writeM)
+
         );
 
 
@@ -133,6 +168,22 @@ module cpu(
         wire [1 : 0] RegDst; // write to 0: rt, 1: rd, 2: $2 (JAL)
         wire RegWrite;
         wire [1 : 0] MemtoReg; // write 0: ALU, 1: MDR, 2: PC + 1
+
+
+        // instruction_cache <---------> datapath.v wires
+        wire read_cache_i;
+        wire write_cache_i;
+        wire [`WORD_SIZE - 1 : 0] address_cache_i;
+        wire [`WORD_SIZE - 1 : 0] data_cache_datapath_i;
+        
+        
+        
+        // data cache <-----------> datapath.v wires
+        wire read_cache_d;
+        wire write_cache_d;
+        wire [`WORD_SIZE - 1 : 0] address_cache_d;
+        wire [`WORD_SIZE - 1 : 0] data_cache_datapath_d;
+        wire doneWrite_d;
 
 
 

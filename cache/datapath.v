@@ -43,7 +43,9 @@ module datapath
         inout [`WORD_SIZE-1:0]        d_data,
         output reg [`WORD_SIZE-1:0]   output_port,
         output                       is_halted, 
-        output reg [`WORD_SIZE-1:0]  num_inst
+        output reg [`WORD_SIZE-1:0]  num_inst,
+
+        input doneWrite_d
         
     );
         // reg declaration

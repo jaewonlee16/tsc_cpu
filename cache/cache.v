@@ -11,7 +11,7 @@ module cache
     output doneWrite,  // tells the cpu that writing is finshed
     output [WORD_SIZE-1:0] address_memory,
     output readM,
-    output writeM,
+    output writeM
    );
     reg [`WORD_SIZE-1:0] temp_data;
     reg [`WORD_SIZE-1:0] num_cache_access,    // for debugging
