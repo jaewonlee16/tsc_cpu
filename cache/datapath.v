@@ -65,7 +65,7 @@ module datapath
             .func_code(func_code),
 
             // flush .signals
-            .jump_miss(jump_miss), // misprediction of unconditional branch
+            .jump_miss(jump_miss_for_pc_update), // misprediction of unconditional branch
             .i_branch_miss(i_branch_miss), // misprediction of conditional branch
 
             // signals that determine when to stall
@@ -416,6 +416,26 @@ module datapath
         assign i_type_branch_target_ID = (pc_ID + 1) + imm_signed_ID;
         assign branch_target = isJump ? jump_target :i_type_branch_target_ID;
         assign jump_miss = isJump && (jump_target != branch_predicted_pc_ID) ? 1 : 0;
+        
+        // jump_miss is 1 as soon as jump misprediction is detected
+        // However, you should not update pc if jump_miss because memory or cache can be busy
+        // therefore, jump_miss_for_pc_update waits until memory or cache is not busy
+        reg jump_miss_for_pc_update;
+        reg [`WORD_SIZE - 1 : 0] jump_target_for_pc_update;
+        always @ (posedge clk) begin
+            if (~reset_n) begin
+                jump_miss_for_pc_update <= 0;
+                jump_target_for_pc_update <= 0;
+            end
+            else if (jump_miss) begin
+                jump_miss_for_pc_update <= 1;
+                jump_target_for_pc_update <= jump_target;
+            end
+            else if (instruction_IF[15 : 12] != `OPCODE_NOP) begin // when memory or cache is not busy
+                jump_miss_for_pc_update <= 0;
+                jump_target_for_pc_update <= jump_target;
+            end
+        end
 
         // If this is a branch instruction and BTB tag match failed in IF,
         // update tag in ID stage.
@@ -528,8 +548,8 @@ module datapath
                     pc <= calculated_pc_EX;
                     num_branch_miss <= num_branch_miss + 1;
                 end
-                else if (jump_miss) begin
-                    pc <= jump_target;
+                else if (jump_miss_for_pc_update) begin
+                    pc <= jump_target_for_pc_update;
                     num_branch_miss <= num_branch_miss + 1;
                 end
                 else if (instruction_IF[15 : 12] == `OPCODE_NOP) pc <= pc;
