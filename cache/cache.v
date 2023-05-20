@@ -1,3 +1,6 @@
+`include "opcodes.v"
+`include "constants.v"
+
 module cache
    (
     input clk,
@@ -51,7 +54,7 @@ module cache
    assign {block_0, block_1, block_2, block_3} = data_bank[index];
 
    // ouput port assignment
-   assign data_mem_cache = writeM ? data_bank[index] : 4*`WORD_SIZE'bz;
+   assign data_mem_cache = writeM ? data_bank[index] : 64'bz;
    assign data_cache_datapath = read_cache ? cache_output_data : `WORD_SIZE'bz;
 
 
@@ -61,16 +64,19 @@ module cache
                && data_bank[index] [63 : 60] != `OPCODE_NOP;
 
    // memory signals
-   assign readM = (read_cache || write_cache) && !hit;
+   // assign readM = (read_cache || write_cache) && !hit;
+   assign address_memory = {address_cache[`WORD_SIZE - 1 : 2], 2'b00};
 
 
    always @ (*) begin
-      if (readM && data_bank[index] [63:63] != `OPCODE_NOP) begin
+      if (read_cache && data_bank[index] [63:60] != `OPCODE_NOP) begin
          valid[index] = 1;
       end
       else valid[index] = 0;
-
-
+   end
+   
+   always @ (posedge clk) begin
+      
       case(block_offset) 
          2'b00: cache_output_data = data_bank[index] [63:48] ;
          2'b01: cache_output_data = data_bank[index] [47:32] ;
@@ -85,10 +91,12 @@ module cache
    always @ (posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<4; i=i+1) begin
-            data_bank[i] <= 0;
+            data_bank[i] <= {4`NOP};
             tag_bank[i] <= 0;
+            valid[i] <= 0;
             num_cache_miss <= 0;
             num_cache_access <= 0;
+            writeM <= 0;
 
          end
       end
@@ -98,8 +106,38 @@ module cache
       else if (count_start) count <= count + 1;
 
    end
+    always @ (*) begin
+        // Request type: Read
+         if (read_cache) begin
+            if (!hit) begin
+               // Read data from lower memory into the cache block
+               data_bank[index] = data_mem_cache;
+               tag_bank[index] = tag;
+            end
+         end
+         // Request type : Write
+         else if (write_cache) begin
+            if (!hit) begin
+               // Read data from lower memory into the cache block
+               data_bank[index] = data_mem_cache;
+               tag_bank[index] = tag;
+            end
+            else begin
+                tag_bank[index] = tag;
+               case(block_offset) 
+                  2'b00: data_bank[index] [63:48] = data_cache_datapath;
+                  2'b01: data_bank[index] [47:32] = data_cache_datapath;
+                  2'b10: data_bank[index] [31:16] = data_cache_datapath;
+                  2'b11: data_bank[index] [15:0] = data_cache_datapath;
+               endcase;
+            end
 
-   always @ (*) begin
+         end
+    
+    end
+    
+   always @ (posedge clk) begin
+      
       if (0) begin
          writeM = 0;
       end

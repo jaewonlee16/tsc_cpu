@@ -45,7 +45,7 @@ module datapath
         output                       is_halted, 
         output reg [`WORD_SIZE-1:0]  num_inst,
 
-        input doneWrite_d
+        input doneWrite
         
     );
         // reg declaration
@@ -67,7 +67,7 @@ module datapath
             .func_code(func_code),
 
             // flush .signals
-            .jump_miss(jump_miss_for_pc_update), // misprediction of unconditional branch
+            .jump_miss(jump_miss), // misprediction of unconditional branch
             .i_branch_miss(i_branch_miss), // misprediction of conditional branch
 
             // signals that determine when to stall
@@ -550,8 +550,8 @@ module datapath
                     pc <= calculated_pc_EX;
                     num_branch_miss <= num_branch_miss + 1;
                 end
-                else if (jump_miss_for_pc_update) begin
-                    pc <= jump_target_for_pc_update;
+                else if (jump_miss) begin
+                    pc <= jump_target;
                     num_branch_miss <= num_branch_miss + 1;
                 end
                 else if (instruction_IF[15 : 12] == `OPCODE_NOP) pc <= pc;

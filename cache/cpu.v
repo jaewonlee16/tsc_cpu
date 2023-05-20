@@ -112,10 +112,10 @@ module cpu(
 
         cache instruction_cache(
                 
-        .clk(!clk),
-        .reset_n(reset_n),
-        .read_cache(read_cache_i),
-        .write_cache(write_cache_i),
+        .clk(!Clk),
+        .reset_n(Reset_N),
+        .read_cache(1),
+        .write_cache(0),
         .address_cache(address_cache_i),
         .data_cache_datapath(data_cache_datapath_i), // data connected to datapath
         .data_mem_cache(i_data), // data connected to memory
@@ -129,8 +129,8 @@ module cpu(
 
         cache data_cache(
                 
-        .clk(!clk),
-        .reset_n(reset_n),
+        .clk(!Clk),
+        .reset_n(Reset_N),
         .read_cache(read_cache_d),
         .write_cache(write_cache_d),
         .address_cache(address_cache_d),
