@@ -19,7 +19,11 @@ module cache
 
    // for data_cache_datapath
     reg [`WORD_SIZE - 1 : 0] cache_output_data;
-    reg [4 * `WORD_SIZE - 1 : 0] mem_output_data;
+
+
+   // counter
+    reg count_start;
+    reg [2: 0] count;
 
 
     // 4 line, 4 word wide cache block
@@ -47,7 +51,7 @@ module cache
    assign {block_0, block_1, block_2, block_3} = data_bank[index];
 
    // ouput port assignment
-   assign data_mem_cache = writeM ? mem_output_data : 4*`WORD_SIZE'bz;
+   assign data_mem_cache = writeM ? data_bank[index] : 4*`WORD_SIZE'bz;
    assign data_cache_datapath = read_cache ? cache_output_data : `WORD_SIZE'bz;
 
 
@@ -61,9 +65,19 @@ module cache
 
 
    always @ (*) begin
-      if (read_cache && !hit) begin
-
+      if (readM && data_bank[index] [63:63] != `OPCODE_NOP) begin
+         valid[index] = 1;
       end
+      else valid[index] = 0;
+
+
+      case(block_offset) 
+         2'b00: cache_output_data = data_bank[index] [63:48] ;
+         2'b01: cache_output_data = data_bank[index] [47:32] ;
+         2'b10: cache_output_data = data_bank[index] [31:16] ;
+         2'b11: cache_output_data = data_bank[index] [15:0] ;
+      endcase
+      
    end
 
    always @ (posedge clk) begin
@@ -71,22 +85,34 @@ module cache
          for (i=0; i<4; i=i+1) begin
             data_bank[i] <= 0;
             tag_bank[i] <= 0;
-            valid[i] <= 0;
-            dirty[i] <= 0;
             num_cache_miss <= 0;
             num_cache_access <= 0;
 
          end
       end
+      if (!reset_n || count == `LATENCY) begin
+         count <= 0;
+      end
+      else if (count_start) count <= count + 1;
+
+   end
+
+   always @ (*) begin
+      if (0) begin
+         writeM = 0;
+      end
       else begin
          // Request type: Read
          if (read_cache) begin
+            doneWrite = 0;
+            count_start = 0;
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] <= data_mem_cache;
-               readM <= 1;
+               data_bank[index] = data_mem_cache;
+               readM = 1;
+               writeM = 0;
             end
-            else readM <= 0;
+            else readM = 0;
              
 
          end
@@ -94,15 +120,31 @@ module cache
          else if (write_cache) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] <= data_mem_cache;
-               readM <= 1;
+               data_bank[index] = data_mem_cache;
+               readM = 1;
             end
-            else readM <= 0;
+            else begin
+               readM = 0;
+               count_start = count == `LATENCY ? 0 : 1;
+               writeM = 1;
+               case(block_offset) 
+                  2'b00: data_bank[index] [63:48] = data_cache_datapath;
+                  2'b01: data_bank[index] [47:32] = data_cache_datapath;
+                  2'b10: data_bank[index] [31:16] = data_cache_datapath;
+                  2'b11: data_bank[index] [15:0] = data_cache_datapath;
+               endcase
+               if (count == `LATENCY) doneWrite = 1;
+            end
 
          end
          // Request type: No memory request
          else begin
 
+            doneWrite = 0;
+            count_start = 0;
+            readM = 0;
+            writeM = 0;
          end 
       end
    end
+endmodule
