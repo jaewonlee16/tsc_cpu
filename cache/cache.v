@@ -16,39 +16,33 @@ module cache
     output reg readM,
     output reg writeM
    );
-    reg [`WORD_SIZE-1:0] address_cache_delay;
     
-    reg [`WORD_SIZE-1:0] num_cache_access;    // for debugging
+    // ------------- logic for hit miss calculation ------------------ //
     reg [`WORD_SIZE-1:0] num_cache_miss;      // for debugging
     reg [`WORD_SIZE-1:0] num_cache_hit;      // for debugging
-    
-    always @ (posedge clk) begin
-        address_cache_delay <= address_cache;
-    end
-    always @ (posedge clk) begin
-        if (!reset_n) num_cache_access <= 0;
-        else if ((read_cache || write_cache) && address_cache_delay != address_cache)
-            num_cache_access <= num_cache_access + 1;
-     end
-   
+
    always @ (posedge clk) begin
         if (!reset_n) begin
             num_cache_miss <= 0;
             num_cache_hit <= 0;
         end
-        if (read_cache && !readM) begin
+        // cache(1cycle) + memory(4cycle) + cache(1cycle)
+        // read_cache && !readM is true only when first cylcle of cache
+        if (read_cache && !readM) begin          
             if (hit) num_cache_hit <= num_cache_hit + 1;
             else num_cache_miss <= num_cache_miss + 1;
         end
-        else if (read_cache && !readM && !doneWrite && !writeM) begin
+        // cache(1cycle) + memory_read(4cycle) + cache(1cycle) + memory_write(4cycle) + cache(1cycle)
+        // write_cache && !readM && !doneWrite && !writeM is true only when first cylcle of cache 
+        else if (write_cache && !readM && !doneWrite && !writeM) begin  
             if (hit) num_cache_hit <= num_cache_hit + 1;
             else num_cache_miss <= num_cache_miss + 1;
         end
            
    end   
    
-   // for write no allocata
-   reg [4 * `WORD_SIZE - 1 : 0] line_buffer;
+   
+    // ---------------------- cache logic -----------------------------------
    
    // for data_cache_datapath
     reg [`WORD_SIZE - 1 : 0] cache_output_data;
@@ -166,7 +160,6 @@ module cache
             tag_bank[i] <= 0;
             valid[i] <= 0;
             num_cache_miss <= 0;
-            num_cache_access <= 0;
             writeM <= 0;
 
          end
