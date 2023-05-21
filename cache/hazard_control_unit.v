@@ -33,6 +33,7 @@ module hazard_control_unit
 
     input d_MEM_write_MEM,
     input [3 : 0] d_data_opcode,
+    input doneWrite,
 
     // control signals
     output reg  stall_IFID, // stall pipeline IF_ID_register
@@ -137,7 +138,7 @@ module hazard_control_unit
     
     wire d_mem_stall_check;
     assign d_mem_stall_check = d_MEM_read_MEM && (d_data_opcode == `OPCODE_NOP) 
-                            || d_MEM_write_MEM && d_count < `LATENCY;
+                            || d_MEM_write_MEM && !doneWrite;
 
     always @ (*) begin
         

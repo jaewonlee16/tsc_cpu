@@ -49,5 +49,6 @@
 `define FORWARD_SRC_WB 1
 `define FORWARD_SRC_RF 2
 
-`define LATENCY 3
+`define LATENCY 4
+`define D_LATENCY 4
 `define NOP {`OPCODE_NOP, 12'b0}

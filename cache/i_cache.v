@@ -1,7 +1,7 @@
 `include "opcodes.v"
 `include "constants.v"
 
-module cache
+module i_cache
    (
     input clk,
     input reset_n,
@@ -45,14 +45,6 @@ module cache
    assign tag = address_cache[`WORD_SIZE-1:4];
    assign block_offset = address_cache[1:0];
 
-   // data_bank decoding
-   wire [`WORD_SIZE - 1:0] block_0;  // block offset 0
-   wire [`WORD_SIZE - 1:0] block_1;  // block offset 1
-   wire [`WORD_SIZE - 1:0] block_2;  // block offset 2
-   wire [`WORD_SIZE - 1:0] block_3;  // block offset 3
-   
-   assign {block_0, block_1, block_2, block_3} = data_bank[index];
-
    // ouput port assignment
    assign data_mem_cache = writeM ? data_bank[index] : 64'bz;
    assign data_cache_datapath = read_cache ? cache_output_data : `WORD_SIZE'bz;
@@ -60,11 +52,10 @@ module cache
 
    // cache hit
    wire hit;
-   assign hit = valid[index] && (tag_bank[index] == tag) 
-               && data_bank[index] [63 : 60] != `OPCODE_NOP;
+   assign hit = valid[index] && (tag_bank[index] == tag);
+
 
    // memory signals
-   // assign readM = (read_cache || write_cache) && !hit;
    assign address_memory = {address_cache[`WORD_SIZE - 1 : 2], 2'b00};
 
 

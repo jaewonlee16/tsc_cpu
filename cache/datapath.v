@@ -68,7 +68,7 @@ module datapath
 
             // flush .signals
             .jump_miss(jump_miss), // misprediction of unconditional branch
-            .i_branch_miss(i_branch_miss), // misprediction of conditional branch
+            .i_branch_miss(i_branch_miss_for_pc_update), // misprediction of conditional branch
 
             // signals that determine when to stall
             .rs_ID(rs_ID), 
@@ -89,6 +89,7 @@ module datapath
 
             .d_MEM_write_MEM(d_writeM_MEM),
             .d_data_opcode(d_data[15 : 12]),
+            .doneWrite(doneWrite),
 
             // control signals
             .stall_IFID(stall_IFID), // stall pipeline IF_ID_register
@@ -527,7 +528,35 @@ module datapath
         assign branch_correct_or_notCorrect = isItype_Branch_EX ? branch_predicted_pc_EX == calculated_pc_EX:
                                               isJump ? ~jump_miss : 1;
         assign i_branch_miss = isItype_Branch_EX && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
-
+        
+        reg i_branch_miss_delay;  // used when memory or cache is busy
+        reg [`WORD_SIZE - 1 : 0] calculated_pc_EX_delay;
+        reg after;
+        always @ (posedge clk) begin
+            if (~reset_n) begin
+                i_branch_miss_delay <= 0;
+                calculated_pc_EX_delay <= 0;
+                after <= 0;
+            end
+            else if (i_branch_miss) begin 
+                i_branch_miss_delay <= 1;
+                calculated_pc_EX_delay <= calculated_pc_EX;
+                after <= 1;
+            end
+            else if (after) begin // when memory or cache is not busy
+                i_branch_miss_delay <= 0;
+                calculated_pc_EX_delay <= calculated_pc_EX_delay;
+                after <= 0;
+            end
+        end
+        
+        wire i_branch_miss_for_pc_update;
+        wire [`WORD_SIZE - 1 : 0] calculated_pc_EX_for_pc_update;
+        assign i_branch_miss_for_pc_update = instruction_ID[15 : 12] == `OPCODE_NOP
+                                             ? i_branch_miss_delay : i_branch_miss;
+        assign calculated_pc_EX_for_pc_update = instruction_ID[15 : 12] == `OPCODE_NOP
+                                             ? calculated_pc_EX_delay : calculated_pc_EX;
+            
         // ID + EX
         // note that calculated_pc_EX is the next pc
         // whereas bht is updated with the current pc
@@ -546,8 +575,8 @@ module datapath
                     num_branch_miss <= 0;
                 end
                 // i_branch first becaus it is instruction from EX stage
-                else if (i_branch_miss) begin 
-                    pc <= calculated_pc_EX;
+                else if (i_branch_miss_for_pc_update) begin 
+                    pc <= calculated_pc_EX_for_pc_update;
                     num_branch_miss <= num_branch_miss + 1;
                 end
                 else if (jump_miss) begin

@@ -38,8 +38,8 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
 	reg [4*`WORD_SIZE-1:0] i_outputData;  // port width changed
 	reg [4*`WORD_SIZE-1:0] d_outputData;  // porth width changed
 	
-    reg [1 : 0] i_count;
-    reg [1 : 0] d_count;
+    reg [2 : 0] i_count;
+    reg [2 : 0] d_count;
     
 	// memory latency model
     always @ (posedge clk) begin
@@ -51,7 +51,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
             if (i_count == `LATENCY) i_count <= 0;
             else if (i_readM) i_count <= i_count + 1;
             
-            if (d_count == `LATENCY + 1) d_count <= 0;
+            if (d_count == `D_LATENCY + 1) d_count <= 0;
             else if (d_readM) d_count <= d_count + 1;
         end
     end
@@ -59,7 +59,7 @@ module Memory(clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_wri
     
 	// output when count is latency else nop
 	assign i_data = (i_count == `LATENCY) ? i_outputData:{4`NOP};
-	assign d_data = d_readM ? (d_count == `LATENCY + 1) ? d_outputData : {4`NOP} : `WORD_SIZE'bz;
+	assign d_data = d_readM ? (d_count >= `D_LATENCY ? d_outputData : {4`NOP}) : 64'bz;
 	
 	always@(posedge clk)
 		if(!reset_n)
