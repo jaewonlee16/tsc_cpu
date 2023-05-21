@@ -1,7 +1,7 @@
 `include "opcodes.v"
 `include "constants.v"
 
-module i_cache
+module d_cache
    (
     input clk,
     input reset_n,
@@ -16,7 +16,8 @@ module i_cache
     output reg readM,
     output reg writeM
    );
-    reg [`WORD_SIZE-1:0] temp_data;
+    wire [4*`WORD_SIZE-1:0] temp_data;
+    assign temp_data = data_bank[index];
     reg [`WORD_SIZE-1:0] num_cache_access;    // for debugging
     reg [`WORD_SIZE-1:0] num_cache_miss;      // for debugging
 
@@ -46,27 +47,26 @@ module i_cache
    assign block_offset = address_cache[1:0];
 
    // ouput port assignment
-   assign data_mem_cache = writeM ? data_bank[index] : 64'bz;
-   assign data_cache_datapath = read_cache ? cache_output_data : `WORD_SIZE'bz;
+   assign data_mem_cache = writeM ? temp_data : 64'bz;
+   assign data_cache_datapath = read_cache ? !hit ? `NOP : cache_output_data : `WORD_SIZE'bz;
 
 
    // cache hit
    wire hit;
-   assign hit = valid[index] && (tag_bank[index] == tag) 
-               && data_bank[index] [63 : 60] != `OPCODE_NOP;
-
+   assign hit = valid[index] && (tag_bank[index] == tag);
+               
    // memory signals
    assign address_memory = {address_cache[`WORD_SIZE - 1 : 2], 2'b00};
 
 
    always @ (*) begin
-      if (read_cache && data_bank[index] [63:60] != `OPCODE_NOP) begin
+      if ((read_cache || write_cache) && data_bank[index] [63:60] != `OPCODE_NOP) begin
          valid[index] = 1;
       end
       else valid[index] = 0;
    end
    
-   always @ (posedge clk) begin
+   always @ (*) begin
       
       case(block_offset) 
          2'b00: cache_output_data = data_bank[index] [63:48] ;
@@ -88,6 +88,36 @@ module i_cache
 
    end
    
+  
+
+    always @ (posedge clk) begin
+        // Request type: Read
+         if (read_cache) begin
+            if (!hit) begin
+               // Read data from lower memory into the cache block
+               data_bank[index] <=  data_mem_cache;
+               tag_bank[index] <= tag;
+            end
+         end
+         // Request type : Write
+         else if (write_cache) begin
+            if (!hit) begin
+               // Read data from lower memory into the cache block
+               data_bank[index] <=  data_mem_cache;
+               tag_bank[index] <=  tag;
+            end
+            else begin
+                tag_bank[index] = tag;
+               case(block_offset) 
+                  2'b00: data_bank[index] [63:48] <= data_cache_datapath;
+                  2'b01: data_bank[index] [47:32] <= data_cache_datapath;
+                  2'b10: data_bank[index] [31:16] <= data_cache_datapath;
+                  2'b11: data_bank[index] [15:0] <= data_cache_datapath;
+               endcase;
+            end
+         end
+    end
+    
    always @ (posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<4; i=i+1) begin
@@ -107,8 +137,8 @@ module i_cache
             count_start = 0;
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] = data_mem_cache;
-               readM = 1;
+
+                readM = 1;
                writeM = 0;
             end
             else readM = 0;
@@ -116,23 +146,20 @@ module i_cache
 
          end
          // Request type : Write
-         else if (write_cache) begin
+         else if (write_cache && !doneWrite) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] = data_mem_cache;
-               readM = 1;
+                readM = 1;
+
             end
             else begin
-               readM = 0;
+;               readM = 0;
                count_start = count == `LATENCY ? 0 : 1;
                writeM = 1;
-               case(block_offset) 
-                  2'b00: data_bank[index] [63:48] = data_cache_datapath;
-                  2'b01: data_bank[index] [47:32] = data_cache_datapath;
-                  2'b10: data_bank[index] [31:16] = data_cache_datapath;
-                  2'b11: data_bank[index] [15:0] = data_cache_datapath;
-               endcase
-               if (count == `LATENCY) doneWrite = 1;
+               if (count == `LATENCY - 1) begin
+                    doneWrite = 1;
+                    writeM = 0;
+               end
             end
 
          end
