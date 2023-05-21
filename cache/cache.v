@@ -1,7 +1,7 @@
 `include "opcodes.v"
 `include "constants.v"
 
-module d_cache
+module cache
    (
     input clk,
     input reset_n,
@@ -16,8 +16,7 @@ module d_cache
     output reg readM,
     output reg writeM
    );
-    wire [4*`WORD_SIZE-1:0] temp_data;
-    assign temp_data = data_bank[index];
+
     reg [`WORD_SIZE-1:0] num_cache_access;    // for debugging
     reg [`WORD_SIZE-1:0] num_cache_miss;      // for debugging
 
@@ -47,7 +46,7 @@ module d_cache
    assign block_offset = address_cache[1:0];
 
    // ouput port assignment
-   assign data_mem_cache = writeM ? temp_data : 64'bz;
+   assign data_mem_cache = writeM ? data_bank[index] : 64'bz;
    assign data_cache_datapath = read_cache ? !hit ? `NOP : cache_output_data : `WORD_SIZE'bz;
 
 
@@ -56,9 +55,12 @@ module d_cache
    assign hit = valid[index] && (tag_bank[index] == tag);
                
    // memory signals
+   // as memory is accessed by line,
+   // last 2 bits are always 00
    assign address_memory = {address_cache[`WORD_SIZE - 1 : 2], 2'b00};
 
-
+    // valid logic
+    // if it is NOP, it is not valid
    always @ (*) begin
       if ((read_cache || write_cache) && data_bank[index] [63:60] != `OPCODE_NOP) begin
          valid[index] = 1;
@@ -66,6 +68,8 @@ module d_cache
       else valid[index] = 0;
    end
    
+   // assign for output
+   // cache_output data is for the output to processor
    always @ (*) begin
       
       case(block_offset) 
@@ -77,8 +81,10 @@ module d_cache
       
    end
    
+   // counter for write
+   // the processor stalls until writeDone
+   // writeDone is determined by "count"
    integer i;
-   
    always @ (posedge clk) begin
       
       if (!reset_n || count == `LATENCY) begin
@@ -89,7 +95,8 @@ module d_cache
    end
    
   
-
+    // update data bank and tag bank logic
+    // write through no allocate
     always @ (posedge clk) begin
         // Request type: Read
          if (read_cache) begin
@@ -118,6 +125,10 @@ module d_cache
          end
     end
     
+    
+   // logic for control signals
+   // determines to read memory or write memory,
+   // sends the processor that write is done (writeDone)
    always @ (posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<4; i=i+1) begin

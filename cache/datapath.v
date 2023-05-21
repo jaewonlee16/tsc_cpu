@@ -529,6 +529,11 @@ module datapath
                                               isJump ? ~jump_miss : 1;
         assign i_branch_miss = isItype_Branch_EX && (branch_predicted_pc_EX != calculated_pc_EX) ? 1 : 0;
         
+        // logic for cache or memory is busy
+        // if busy branch misprediction update should be delayed
+        // delayed signals are named at the end of the name as "_delay"
+        // there is also logic to choose the original signal or delayed signal for pc updata
+        // those signals are named at the end of the name as "_for_pc_update"
         reg i_branch_miss_delay;  // used when memory or cache is busy
         reg [`WORD_SIZE - 1 : 0] calculated_pc_EX_delay;
         reg after;
