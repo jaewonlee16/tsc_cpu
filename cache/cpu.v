@@ -110,9 +110,9 @@ module cpu(
         );
 
 
-        i_cache instruction_cache(
+        cache instruction_cache(
                 
-        .clk(!Clk),
+        .clk(Clk),
         .reset_n(Reset_N),
         .read_cache(1),
         .write_cache(0),
@@ -127,7 +127,7 @@ module cpu(
 
         );
 
-        d_cache data_cache(
+        cache data_cache(
                 
         .clk(Clk),
         .reset_n(Reset_N),

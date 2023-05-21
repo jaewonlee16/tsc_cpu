@@ -52,8 +52,8 @@ module i_cache
 
    // cache hit
    wire hit;
-   assign hit = valid[index] && (tag_bank[index] == tag);
-
+   assign hit = valid[index] && (tag_bank[index] == tag) 
+               && data_bank[index] [63 : 60] != `OPCODE_NOP;
 
    // memory signals
    assign address_memory = {address_cache[`WORD_SIZE - 1 : 2], 2'b00};
@@ -80,6 +80,15 @@ module i_cache
    integer i;
    
    always @ (posedge clk) begin
+      
+      if (!reset_n || count == `LATENCY) begin
+         count <= 0;
+      end
+      else if (count_start) count <= count + 1;
+
+   end
+   
+   always @ (posedge clk) begin
       if (!reset_n) begin
          for (i=0; i<4; i=i+1) begin
             data_bank[i] <= {4`NOP};
@@ -90,47 +99,6 @@ module i_cache
             writeM <= 0;
 
          end
-      end
-      if (!reset_n || count == `LATENCY) begin
-         count <= 0;
-      end
-      else if (count_start) count <= count + 1;
-
-   end
-    always @ (*) begin
-        // Request type: Read
-         if (read_cache) begin
-            if (!hit) begin
-               // Read data from lower memory into the cache block
-               data_bank[index] = data_mem_cache;
-               tag_bank[index] = tag;
-            end
-         end
-         // Request type : Write
-         else if (write_cache) begin
-            if (!hit) begin
-               // Read data from lower memory into the cache block
-               data_bank[index] = data_mem_cache;
-               tag_bank[index] = tag;
-            end
-            else begin
-                tag_bank[index] = tag;
-               case(block_offset) 
-                  2'b00: data_bank[index] [63:48] = data_cache_datapath;
-                  2'b01: data_bank[index] [47:32] = data_cache_datapath;
-                  2'b10: data_bank[index] [31:16] = data_cache_datapath;
-                  2'b11: data_bank[index] [15:0] = data_cache_datapath;
-               endcase;
-            end
-
-         end
-    
-    end
-    
-   always @ (posedge clk) begin
-      
-      if (0) begin
-         writeM = 0;
       end
       else begin
          // Request type: Read
