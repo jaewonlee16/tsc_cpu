@@ -131,7 +131,9 @@ module cpu(
         .doneWrite(),  // tells the cpu that writing is finshed
         .address_memory(i_address),
         .readM(i_readM),
-        .writeM()
+        .writeM(),
+
+        .BG(0) // always 0 in i_cache
 
         );
 
@@ -148,7 +150,9 @@ module cpu(
         .doneWrite(doneWrite_d),  // tells the cpu that writing is finshed
         .address_memory(d_address),
         .readM(d_readM),
-        .writeM(d_writeM)
+        .writeM(d_writeM),
+
+        .BG(BG)
 
         );
 
