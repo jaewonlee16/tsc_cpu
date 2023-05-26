@@ -14,7 +14,10 @@ module cache
     output reg doneWrite,  // tells the cpu that writing is finshed
     output [`WORD_SIZE-1:0] address_memory,
     output reg readM,
-    output reg writeM
+    output reg writeM,
+
+    // DMA
+    input BG
    );
     
     // ------------- logic for hit miss calculation ------------------ //
@@ -126,7 +129,7 @@ module cache
          if (read_cache) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] <=  data_mem_cache;
+               data_bank[index] <= BG ? {4`NOP} : data_mem_cache;
                tag_bank[index] <= tag;
             end
          end
@@ -134,7 +137,7 @@ module cache
          else if (write_cache) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] <=  data_mem_cache;
+               data_bank[index] <=  BG ? {4`NOP} : data_mem_cache;
                tag_bank[index] <=  tag;
             end
             else begin
@@ -172,7 +175,7 @@ module cache
             if (!hit) begin
                // Read data from lower memory into the cache block
 
-                readM = 1;
+                readM = BG ? 0 : 1;
                writeM = 0;
             end
             else readM = 0;
@@ -183,7 +186,7 @@ module cache
          else if (write_cache && !doneWrite) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-                readM = 1;
+                readM = BG ? 0 : 1;
 
             end
             else begin
