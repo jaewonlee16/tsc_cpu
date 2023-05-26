@@ -152,6 +152,23 @@ module cpu(
 
         );
 
+        interrupt_handler i_handler(
+        // DMA signals
+        .clk(Clk),
+        .dma_start_int(dma_start_int),
+        .dma_end_int, // not use
+        .BR(BR),
+        .BG(BG),
+        .cmd(cmd),
+
+        // d_mem signals
+        .d_readM(d_readM),
+        .d_writeM(d_writeM),
+        .d_data(d_data),
+        .doneWrite_d(doneWrite_d) 
+
+        );
+
 
         // wires
         // control_unit.v    <----->   datapath.v wires
