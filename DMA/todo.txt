@@ -1,2 +1,5 @@
 currently added DMA ports to cpu.v
 but neeed to add wires of DMA ports to other modules inside cpu.v like datapath or cache
+
+change BG to combinational logic in interrupt_handler.
+also change BR 0 at LENGTH
