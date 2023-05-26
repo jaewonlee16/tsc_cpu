@@ -39,14 +39,12 @@ module DMA (
 
     // BR logic
     reg BR;
-    // BR is 1 after cmd and turns to 0 same as BR
+    // BR is 1 after cmd and turns to 0 when write ends (when counter is LENGTH)
     always @ (posedge CLK) begin
         if (cmd) BR <= 1;
+        else if (counter == `LENGTH - 1) BR <= 0;
     end
 
-    always @ (negedge BG) begin
-        BR <= 0;
-    end
 
     // Write
     assign WRITE = BG;
@@ -67,11 +65,9 @@ module DMA (
     assign offset = counter >> 2; // divide by 4
 
 
-    // dma_end
-    // due to 1 cycle delay from interrupt_end to BG: 0
-    // interrupt is on 1 cylce early
-    assign interrupt = counter == `LENGTH - 1;
-
+    // not use interrupt
+    // instead use BR to see if interrupt ended
+    // assign interrupt = counter == `LENGTH - 1;
 
 
 endmodule
