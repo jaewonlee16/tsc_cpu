@@ -24,7 +24,15 @@ module cpu(
 
         output [`WORD_SIZE-1:0] num_inst, 
         output [`WORD_SIZE-1:0] output_port, 
-        output is_halted
+        output is_halted,
+
+        // DMA signals
+        input dma_start_int,
+        input dma_end_int,
+        input BR,
+        output BG,
+        output cmd
+
 );
 
 	// TODO : Implement your pipelined CPU!
