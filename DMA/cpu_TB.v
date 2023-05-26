@@ -42,7 +42,7 @@ module cpu_TB();
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM, d_address, d_data, num_inst, output_port, is_halted, 
             dma_start_int, dma_end_int, BR, BG, cmd);
-	Memory NUUT(!clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM, d_address, d_data);		   
+	Memory NUUT(!clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM || dma_WRITE, d_address, d_data_bus);		   
 
 
     // DMA and external devices
@@ -56,6 +56,15 @@ module cpu_TB();
     wire [1:0] dma_offset;
     wire dma_end_int;
     wire dma_start_int;
+
+	// data bus mux
+	// choose d_data or dma_data to d_data_bus(memory)
+	// implemented mux with high impedance because d_data bus is inout port
+    wire [`WORD_SIZE * 4 - 1 : 0] d_data_bus;
+	assign d_data_bus = BG && dma_WRITE ? dma_data : 64`hz;
+	assign d_data_bus = !BG && d_writeM ? d_data : 64`hz;
+	assign d_data = !BG && d_readM ? d_data_bus : 64`hz;
+	
 
     DMA DMA(.CLK(CLK), .BG(BG),  .edata(edata), .cmd(cmd), .BR(BR), .WRITE(dma_WRITE),
         .addr(dma_addr), .data(dma_data), .offset(dma_offset), .interrupt(dma_end_int));
