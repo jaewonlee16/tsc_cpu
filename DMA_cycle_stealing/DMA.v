@@ -42,7 +42,8 @@ module DMA (
     // BR is 1 after cmd and turns to 0 when write ends (when counter is LENGTH)
     always @ (posedge CLK) begin
         if (cmd) BR <= 1;
-        else if (counter == `LENGTH - 2) BR <= 0;
+        else if (BR == 0 && (counter == 3 || counter == 7)) BR <= 1;
+        else if (counter == `LENGTH - 2 || counter == `LENGTH - 6 || counter == `LENGTH - 10) BR <= 0;
     end
 
 
