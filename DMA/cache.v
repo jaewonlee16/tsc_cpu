@@ -191,8 +191,8 @@ module cache
             end
             else begin
 ;               readM = 0;
-               count_start = count == `LATENCY ? 0 : 1;
-               writeM = 1;
+               count_start = BG ? 0 : 1;
+               writeM = BG ? 0 : 1;
                if (count == `LATENCY - 1) begin
                     doneWrite = 1;
                     writeM = 0;
