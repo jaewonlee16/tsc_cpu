@@ -170,15 +170,15 @@ module cache
       else begin
          // Request type: Read
          if (read_cache) begin
-            doneWrite = 0;
-            count_start = 0;
+            doneWrite <= 0;
+            count_start <= 0;
             if (!hit) begin
                // Read data from lower memory into the cache block
 
-                readM = BG ? 0 : 1; // if BG don't readM
-               writeM = 0;
+                readM <= BG ? 0 : 1; // if BG don't readM
+               writeM <= 0;
             end
-            else readM = 0;
+            else readM <= 0;
              
 
          end
@@ -186,16 +186,16 @@ module cache
          else if (write_cache && !doneWrite) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-                readM = BG ? 0 : 1; // if BG don't readM
+                readM <= BG ? 0 : 1; // if BG don't readM
 
             end
             else begin
-;               readM = 0;
-               count_start = BG ? 0 : 1; // if BG write is not started
-               writeM = BG ? 0 : 1;      // if BG don't writeM
+;               readM <= 0;
+               count_start <= BG ? 0 : 1; // if BG write is not started
+               writeM <= BG ? 0 : 1;      // if BG don't writeM
                if (count == `LATENCY - 1) begin
-                    doneWrite = 1;
-                    writeM = 0;
+                    doneWrite <= 1;
+                    writeM <= 0;
                end
             end
 
@@ -203,10 +203,10 @@ module cache
          // Request type: No memory request
          else begin
 
-            doneWrite = 0;
-            count_start = 0;
-            readM = 0;
-            writeM = 0;
+            doneWrite <= 0;
+            count_start <= 0;
+            readM <= 0;
+            writeM <= 0;
          end 
       end
    end
