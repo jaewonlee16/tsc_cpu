@@ -23,7 +23,8 @@ module DMA (
     input CLK, BG,
     input [4 * `WORD_SIZE - 1 : 0] edata,
     input cmd,
-    output BR, WRITE,
+    output reg BR, 
+    output WRITE,
     output [`WORD_SIZE - 1 : 0] addr, 
     output [4 * `WORD_SIZE - 1 : 0] data,
     output [1:0] offset,
@@ -37,12 +38,11 @@ module DMA (
     end
 
 
-    // BR logic
-    reg BR;
+    // BR logic;
     // BR is 1 after cmd and turns to 0 when write ends (when counter is LENGTH)
     always @ (posedge CLK) begin
         if (cmd) BR <= 1;
-        else if (counter == `LENGTH - 1) BR <= 0;
+        else if (counter == `LENGTH - 2) BR <= 0;
     end
 
 
@@ -58,7 +58,7 @@ module DMA (
     // offset
     reg [`WORD_SIZE - 1 : 0] counter;
     always @ (posedge CLK) begin
-        if (BG && counter == `LENGTH) counter <= 0;
+        if (!BG) counter <= 0;
         else if (BG) counter <= counter + 1;
     end
 

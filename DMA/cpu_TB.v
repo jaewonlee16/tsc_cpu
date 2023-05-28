@@ -42,7 +42,7 @@ module cpu_TB();
 	// instantiate the unit under test
 	cpu UUT (clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM, d_address, d_data, num_inst, output_port, is_halted, 
             dma_start_int, dma_end_int, BR, BG, cmd);
-	Memory NUUT(!clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM || dma_WRITE, d_address, d_data_bus);		   
+	Memory NUUT(!clk, reset_n, i_readM, i_writeM, i_address, i_data, d_readM, d_writeM || dma_WRITE, d_address_bus, d_data_bus);		   
 
 
     // DMA and external devices
@@ -65,10 +65,12 @@ module cpu_TB();
 	assign d_data_bus = !BG && d_writeM ? d_data : 64'hz;
 	assign d_data = !BG && d_readM ? d_data_bus : 64'hz;
 	
+	wire [`WORD_SIZE - 1 : 0] d_address_bus;
+	assign d_address_bus = BG ? dma_addr : d_address;
 
-    DMA DMA(.CLK(CLK), .BG(BG),  .edata(edata), .cmd(cmd), .BR(BR), .WRITE(dma_WRITE),
+    DMA DMA(.CLK(clk), .BG(BG),  .edata(edata), .cmd(cmd), .BR(BR), .WRITE(dma_WRITE),
         .addr(dma_addr), .data(dma_data), .offset(dma_offset), .interrupt(dma_end_int));
-    external_device edevice(.offset(offset), .interrupt(dma_start_int), .data(edata));
+    external_device edevice(.offset(dma_offset), .interrupt(dma_start_int), .data(edata));
 
 	// initialize inputs
 	initial begin
