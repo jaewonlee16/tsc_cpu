@@ -61,9 +61,9 @@ module cpu_TB();
 	// choose d_data or dma_data to d_data_bus(memory)
 	// implemented mux with high impedance because d_data bus is inout port
     wire [`WORD_SIZE * 4 - 1 : 0] d_data_bus;
-	assign d_data_bus = BG && dma_WRITE ? dma_data : 64`hz;
-	assign d_data_bus = !BG && d_writeM ? d_data : 64`hz;
-	assign d_data = !BG && d_readM ? d_data_bus : 64`hz;
+	assign d_data_bus = BG && dma_WRITE ? dma_data : 64'hz;
+	assign d_data_bus = !BG && d_writeM ? d_data : 64'hz;
+	assign d_data = !BG && d_readM ? d_data_bus : 64'hz;
 	
 
     DMA DMA(.CLK(CLK), .BG(BG),  .edata(edata), .cmd(cmd), .BR(BR), .WRITE(dma_WRITE),

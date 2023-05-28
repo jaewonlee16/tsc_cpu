@@ -16,8 +16,8 @@
 *************************************************/
 
 // fixed address and length
-`define ADDRESS 16`h01F4
-`define LENGTH 16`d12
+`define ADDRESS 16'h01F4
+`define LENGTH 16'd12
 
 module DMA (
     input CLK, BG,
@@ -50,10 +50,10 @@ module DMA (
     assign WRITE = BG;
 
     // data
-    assign data = BG ? edata : 64`hz;
+    assign data = BG ? edata : 64'hz;
 
     // addr
-    assign addr = BG ? `ADDRESS + 4 * offset : `WORD_SIZE`hz;
+    assign addr = BG ? `ADDRESS + 4 * offset : `WORD_SIZE'hz;
 
     // offset
     reg [`WORD_SIZE - 1 : 0] counter;

@@ -5,7 +5,7 @@ module interrupt_handler(
     input dma_end_int, // not use
     input BR,
     output reg BG,
-    output cmd,
+    output reg cmd,
 
     // d_mem signals
     input d_readM,

@@ -160,7 +160,7 @@ module cpu(
         // DMA signals
         .clk(Clk),
         .dma_start_int(dma_start_int),
-        .dma_end_int, // not use
+        .dma_end_int(), // not use
         .BR(BR),
         .BG(BG),
         .cmd(cmd),
