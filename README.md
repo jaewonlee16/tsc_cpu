@@ -15,4 +15,5 @@ CPU implemented using TSC ISA for SNU ECE430.322 Computer organization
 
 6. DMA is added to cache and pipelined cpu.
    There are two files of DMA module, which are DMA.v and DMA_cycle_stealing.v
+   
    Cycle stealing is implemented in DMA_cycle_stealing.v
