@@ -129,7 +129,7 @@ module cache
          if (read_cache) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-               data_bank[index] <= BG ? {4`NOP} : data_mem_cache;
+               data_bank[index] <= BG ? {4`NOP} : data_mem_cache;  // if BG stall(NOP) else read from data memory
                tag_bank[index] <= tag;
             end
          end
@@ -175,7 +175,7 @@ module cache
             if (!hit) begin
                // Read data from lower memory into the cache block
 
-                readM = BG ? 0 : 1;
+                readM = BG ? 0 : 1; // if BG don't readM
                writeM = 0;
             end
             else readM = 0;
@@ -186,13 +186,13 @@ module cache
          else if (write_cache && !doneWrite) begin
             if (!hit) begin
                // Read data from lower memory into the cache block
-                readM = BG ? 0 : 1;
+                readM = BG ? 0 : 1; // if BG don't readM
 
             end
             else begin
 ;               readM = 0;
-               count_start = BG ? 0 : 1;
-               writeM = BG ? 0 : 1;
+               count_start = BG ? 0 : 1; // if BG write is not started
+               writeM = BG ? 0 : 1;      // if BG don't writeM
                if (count == `LATENCY - 1) begin
                     doneWrite = 1;
                     writeM = 0;

@@ -19,9 +19,11 @@ module interrupt_handler(
                     || d_writeM && !doneWrite_d;
     always @ (posedge clk) begin
         if (BR && !d_mem_busy) BG <= 1;
-        else if (!BR) BG <= 0;
+        //else if (!BR) BG <= 0;
     end
-
+    always @ (negedge BR) begin
+        BG <= 0;
+    end
     // cmd
     always @ (posedge clk) begin
         cmd <= dma_start_int;

@@ -37,14 +37,12 @@ module DMA (
         BR <= 0;
     end
 
-
     // BR logic;
     // BR is 1 after cmd and turns to 0 when write ends (when counter is LENGTH)
     always @ (posedge CLK) begin
         if (cmd) BR <= 1;
-        else if (counter == `LENGTH - 2) BR <= 0;
+        else if (counter == `LENGTH - 1) BR <= 0;
     end
-
 
     // Write
     assign WRITE = BG;
@@ -55,20 +53,18 @@ module DMA (
     // addr
     assign addr = BG ? `ADDRESS + 4 * offset : `WORD_SIZE'hz;
 
-    // offset
+    // counter to count num of cycles of memory access
     reg [`WORD_SIZE - 1 : 0] counter;
     always @ (posedge CLK) begin
-        if (!BG) counter <= 0;
+        if (BG && counter == `LENGTH) counter <= 0;
         else if (BG) counter <= counter + 1;
     end
-
+    
+    // offset
     assign offset = counter >> 2; // divide by 4
-
 
     // not use interrupt
     // instead use BR to see if interrupt ended
-    // assign interrupt = counter == `LENGTH - 1;
-
 
 endmodule
 

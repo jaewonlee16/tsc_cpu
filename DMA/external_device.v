@@ -51,7 +51,7 @@ module external_device(
       #(`INTTERRUPT_DURATION);
       interrupt <=  0;
       
-      $finish;
+      //$finish;
   end
 
   /* Data to be send */

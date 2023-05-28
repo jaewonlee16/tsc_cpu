@@ -42,8 +42,9 @@ module DMA (
     // BR is 1 after cmd and turns to 0 when write ends (when counter is LENGTH)
     always @ (posedge CLK) begin
         if (cmd) BR <= 1;
-        else if (BR == 0 && (counter == 3 || counter == 7)) BR <= 1;
-        else if (counter == `LENGTH - 2 || counter == `LENGTH - 6 || counter == `LENGTH - 10) BR <= 0;
+        else if (BR == 0 && (counter == `LENGTH - 8 || counter == `LENGTH -4)) BR <= 1;   // cycle stealing: set BR to 1 every 1 word
+        // because of cycle stealing.set BR to 0 after 1 word dma write
+        else if (counter == `LENGTH - 1 || counter == `LENGTH - 5 || counter == `LENGTH - 9) BR <= 0;
     end
 
 
@@ -59,7 +60,7 @@ module DMA (
     // offset
     reg [`WORD_SIZE - 1 : 0] counter;
     always @ (posedge CLK) begin
-        if (!BG) counter <= 0;
+        if (BG && counter == `LENGTH) counter <= 0;
         else if (BG) counter <= counter + 1;
     end
 

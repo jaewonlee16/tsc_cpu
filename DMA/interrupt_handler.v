@@ -15,13 +15,17 @@ module interrupt_handler(
 );
 
     wire d_mem_busy;
-    assign d_mem_busy = d_readM && d_data[63 : 60] == `OPCODE_NOP
-                    || d_writeM && !doneWrite_d;
+    assign d_mem_busy = d_readM && d_data[63 : 60] == `OPCODE_NOP // when d_readM and stall
+                    || d_writeM && !doneWrite_d;                  // when d_writeM and stall
+    
+    // after BR and d memory access change BG to 1
     always @ (posedge clk) begin
         if (BR && !d_mem_busy) BG <= 1;
-        else if (!BR) BG <= 0;
     end
-
+    // asynchronously change BG to 0 as BR
+    always @ (negedge BR) begin
+        BG <= 0;
+    end
     // cmd
     always @ (posedge clk) begin
         cmd <= dma_start_int;
