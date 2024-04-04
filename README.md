@@ -17,3 +17,10 @@ CPU implemented using TSC ISA for SNU ECE430.322 Computer organization
    There are two files of DMA module, which are DMA.v and DMA_cycle_stealing.v
    
    Cycle stealing is implemented in DMA_cycle_stealing.v
+
+## For more information check the reports
+- [single -cycle](https://github.com/jaewonlee16/tsc_cpu/blob/master/single_cycle/Lab04%20report.pdf)
+- [multi-cycle](https://github.com/jaewonlee16/tsc_cpu/blob/master/multi_cycle/lab05%20report.pdf)
+- [pipeline](https://github.com/jaewonlee16/tsc_cpu/blob/master/pipeline/Lab06%20report.pdf)
+- [cache](https://github.com/jaewonlee16/tsc_cpu/blob/master/cache/lab07%20report.pdf)
+- [DMA](https://github.com/jaewonlee16/tsc_cpu/blob/master/DMA/lab08%20report.pdf)
